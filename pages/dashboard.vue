@@ -1,15 +1,6 @@
 <template>
   <v-form id="edit-form" ref="form" v-model="valid" lazy-validation>
     <v-toolbar flat>
-      <!-- <v-tooltip bottom>
-        <template #activator="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="backToList()">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-        </template>
-        <span>Quay lại danh sách phòng ban </span>
-      </v-tooltip> -->
-
       <v-toolbar-title v-if="isEdit" class="blue--text font-weight-bold">{{
         `Kê đơn thuốc: ${title_name}`
       }}</v-toolbar-title>
@@ -21,10 +12,10 @@
         <v-icon color="white" left>mdi-content-save</v-icon>
         Lưu
       </v-btn>
-
-      <!-- <v-btn icon>
-        <v-icon>mdi-heart</v-icon>
-      </v-btn>-->
+      <v-btn tile color="blue" :disabled="!valid" @click="dialogSave = true">
+        <v-icon color="white" left>mdi-content-save</v-icon>
+        In
+      </v-btn>
     </v-toolbar>
     <v-dialog v-model="dialogSave" width="unset">
       <v-card>
@@ -41,176 +32,150 @@
       </v-card>
     </v-dialog>
     <v-card elevation="2" class="mx-auto" outlined>
-      <v-row class="pa-5">
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model="department.code"
-            label="Số phiếu"
-            outlined
-            dense
-            class="required"
-            color="red"
-          ></v-text-field>
-        </v-col>
+      <v-tabs background-color="blue" dark no-animation>
+        <v-tab>kê toa</v-tab>
+        <v-tab-item
+          v-for="n in 3"
+          :key="n"
+          :transition="false"
+          :reverse-transition="false"
+        >
+          <v-container fluid style="background-color: white">
+            <v-row class="pa-5">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-text-field
+                  v-model="department.code"
+                  label="Số phiếu"
+                  outlined
+                  dense
+                  class="required"
+                  color="red"
+                ></v-text-field>
+              </v-col>
 
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model="department.name"
-            label="Mã bệnh nhân"
-            outlined
-            dense
-            class="required"
-            color="red"
-          ></v-text-field>
-        </v-col>
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-text-field
+                  v-model="department.name"
+                  label="Mã bệnh nhân"
+                  outlined
+                  dense
+                  class="required"
+                  color="red"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" sm="4" lg="4" xl="4" md="4">
+                <v-text-field
+                  v-model.number="department.level"
+                  label="Tên bệnh nhân"
+                  maxlength="1"
+                  :rules="[numberRule]"
+                  outlined
+                  dense
+                  class="required"
+                  color="red"
+                ></v-text-field>
+              </v-col>
 
-        <!-- <v-col cols="12" sm="6"
-                  lg="6"
-                  xl="6"
-                  md="6">
-            <v-text-field
-              v-model="department.plain_name"
-              label="Tên không dấu"
-              outlined
-              dense
-            ></v-text-field>
-          </v-col> -->
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-text-field
+                  v-model.number="department.level"
+                  label="Giới tính"
+                  maxlength="1"
+                  :rules="[numberRule]"
+                  outlined
+                  dense
+                  class="required"
+                  color="red"
+                ></v-text-field>
+              </v-col>
 
-        <!-- <v-col cols="12" sm="6" lg="6" xl="6" md="6">
-            <v-text-field
-              v-model="department.name_en"
-              label="Tên_En"
-              outlined
-              dense
-            ></v-text-field>
-          </v-col>
+              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+                <v-autocomplete
+                  v-model="department.department_parent"
+                  label="Năm sinh"
+                  :items="departments_parent_list"
+                  item-text="name"
+                  item-value="id"
+                  return-object
+                  outlined
+                  dense
+                  clearable
+                ></v-autocomplete>
+              </v-col>
 
-          <v-col cols="12" sm="6" lg="6" xl="6" md="6">
-            <v-text-field
-              v-model="department.name_ru"
-              label="Tên_Ru"
-              outlined
-              dense
-            ></v-text-field>
-          </v-col> -->
+              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+                <v-autocomplete
+                  v-model="department.department_parent"
+                  label="Đối tượng"
+                  :items="departments_parent_list"
+                  item-text="name"
+                  item-value="id"
+                  return-object
+                  outlined
+                  dense
+                  clearable
+                ></v-autocomplete>
+              </v-col>
 
-        <v-col cols="12" sm="6" lg="6" xl="4" md="6">
-          <v-text-field
-            v-model.number="department.level"
-            label="Tên bệnh nhân"
-            maxlength="1"
-            :rules="[numberRule]"
-            outlined
-            dense
-            class="required"
-            color="red"
-          ></v-text-field>
-        </v-col>
+              <v-col cols="12" sm="6" xl="2" md="6">
+                <v-text-field
+                  v-model="department.manager"
+                  label="Dược phẩm"
+                  outlined
+                  dense
+                ></v-text-field>
+              </v-col>
 
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model.number="department.level"
-            label="Giới tính"
-            maxlength="1"
-            :rules="[numberRule]"
-            outlined
-            dense
-            class="required"
-            color="red"
-          ></v-text-field>
-        </v-col>
+              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+                <v-text-field
+                  v-model.number="department.idx"
+                  label="Số ngày"
+                  :rules="[numberRule]"
+                  outlined
+                  dense
+                ></v-text-field>
+              </v-col>
 
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-autocomplete
-            v-model="department.department_parent"
-            label="Năm sinh"
-            :items="departments_parent_list"
-            item-text="name"
-            item-value="id"
-            return-object
-            outlined
-            dense
-            clearable
-          ></v-autocomplete>
-        </v-col>
+              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+                <v-text-field
+                  v-model.number="department.costcenter_id"
+                  label="Hạn sử dụng"
+                  outlined
+                  :rules="[numberRule]"
+                  dense
+                ></v-text-field>
+              </v-col>
 
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-autocomplete
-            v-model="department.department_parent"
-            label="Đối tượng"
-            :items="departments_parent_list"
-            item-text="name"
-            item-value="id"
-            return-object
-            outlined
-            dense
-            clearable
-          ></v-autocomplete>
-        </v-col>
-        <!-- <v-col cols="12" sm="6"
-                  lg="6"
-                  xl="6"
-                  md="6">
-            <v-text-field
-              v-model.number="department.clinic_type_id"
-              label="loại phòng bệnh"
-            outlined
-              dense></v-text-field>
-          </v-col> -->
+              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+                <v-autocomplete
+                  v-model="department.department_parent"
+                  label="Đơn vị tính"
+                  :items="departments_parent_list"
+                  item-text="name"
+                  item-value="id"
+                  return-object
+                  outlined
+                  dense
+                  clearable
+                ></v-autocomplete>
+              </v-col>
 
-        <v-col cols="12" sm="6" xl="2" md="6">
-          <v-text-field
-            v-model="department.manager"
-            label="Dược phẩm"
-            outlined
-            dense
-          ></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model.number="department.idx"
-            label="Số ngày"
-            :rules="[numberRule]"
-            outlined
-            dense
-          ></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model.number="department.costcenter_id"
-            label="Hạn sử dụng"
-            outlined
-            :rules="[numberRule]"
-            dense
-          ></v-text-field>
-        </v-col>
-
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-autocomplete
-            v-model="department.department_parent"
-            label="Đơn vị tính"
-            :items="departments_parent_list"
-            item-text="name"
-            item-value="id"
-            return-object
-            outlined
-            dense
-            clearable
-          ></v-autocomplete>
-        </v-col>
-
-        <v-col cols="12" sm="6" lg="6" xl="2" md="6">
-          <v-text-field
-            v-model.number="department.costcenter_id"
-            label="Số lượng tồn"
-            outlined
-            :rules="[numberRule]"
-            dense
-          ></v-text-field>
-        </v-col>
-      </v-row>
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-text-field
+                  v-model.number="department.costcenter_id"
+                  label="Số lượng tồn"
+                  outlined
+                  :rules="[numberRule]"
+                  dense
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <tr>
+              <th v-for="item in headers" :key="item.name"></th>
+            </tr>
+          </v-container>
+        </v-tab-item>
+      </v-tabs>
     </v-card>
     <v-row> </v-row>
     <v-snackbar v-model="snackbar">
