@@ -89,7 +89,7 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-autocomplete
                   v-model="department.department_parent"
                   label="Năm sinh"
@@ -103,7 +103,7 @@
                 ></v-autocomplete>
               </v-col>
 
-              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-autocomplete
                   v-model="department.department_parent"
                   label="Đối tượng"
@@ -117,7 +117,7 @@
                 ></v-autocomplete>
               </v-col>
 
-              <v-col cols="12" sm="6" xl="2" md="6">
+              <v-col cols="12" sm="2" xl="2" md="2">
                 <v-text-field
                   v-model="department.manager"
                   label="Dược phẩm"
@@ -126,7 +126,7 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
                   v-model.number="department.idx"
                   label="Số ngày"
@@ -136,7 +136,7 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
                   v-model.number="department.costcenter_id"
                   label="Hạn sử dụng"
@@ -146,7 +146,7 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="6" lg="6" xl="2" md="6">
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-autocomplete
                   v-model="department.department_parent"
                   label="Đơn vị tính"
