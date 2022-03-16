@@ -67,6 +67,7 @@
                 <v-text-field
                   v-model.number="department.level"
                   label="Tên bệnh nhân"
+                  disabled
                   maxlength="1"
                   :rules="[numberRule]"
                   outlined
@@ -80,6 +81,7 @@
                 <v-text-field
                   v-model.number="department.level"
                   label="Giới tính"
+                  disabled
                   maxlength="1"
                   :rules="[numberRule]"
                   outlined
