@@ -119,13 +119,18 @@
                 ></v-autocomplete>
               </v-col>
 
-              <v-col cols="12" sm="2" xl="2" md="2">
-                <v-text-field
-                  v-model="department.manager"
-                  label="Dược phẩm"
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-autocomplete
+                  v-model="department.department_parent"
+                  label="Tên thuốc"
+                  :items="medicines_list"
+                  item-text="name"
+                  item-value="id"
+                  return-object
                   outlined
                   dense
-                ></v-text-field>
+                  clearable
+                ></v-autocomplete>
               </v-col>
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
@@ -143,6 +148,7 @@
                   v-model.number="department.costcenter_id"
                   label="Hạn sử dụng"
                   outlined
+                  disabled
                   :rules="[numberRule]"
                   dense
                 ></v-text-field>
@@ -154,7 +160,7 @@
                   label="Đơn vị tính"
                   :items="departments_parent_list"
                   item-text="name"
-                  item-value="id"
+                  item-value="gender"
                   return-object
                   outlined
                   dense
@@ -167,6 +173,7 @@
                   v-model.number="department.costcenter_id"
                   label="Số lượng tồn"
                   outlined
+                  disabled
                   :rules="[numberRule]"
                   dense
                 ></v-text-field>
@@ -204,27 +211,15 @@
                     </template>
                   </v-snackbar>
                   <v-toolbar flat>
-                    <v-toolbar-title class="blue--text"
-                      >Bệnh nhân</v-toolbar-title
-                    >
-                    <v-divider class="mx-4" inset vertical></v-divider>
-                    <v-text-field
-                      v-model="search"
-                      append-icon="mdi-magnify"
-                      label="Tìm"
-                      single-line
-                      hide-details
-                      @keyup.enter="searchAll"
-                    ></v-text-field>
-                    <v-spacer></v-spacer>
                     <v-btn
                       v-if="permission.is_add"
                       outlined
                       color="blue"
                       class="mb-2"
                       @click="add()"
+                      align="center"
                     >
-                      Thêm bệnh nhân
+                      Thêm vào toa
                     </v-btn>
 
                     <v-dialog v-model="dialogDelete" width="unset">
@@ -451,6 +446,7 @@ export default {
     user: {},
     permission: {},
     departments_parent_list: [],
+    medicines_list: [],
     snackbar: false,
     textSnackbar: '',
     department_types: [],
@@ -676,7 +672,11 @@ export default {
       department_parent: { id: null, name: null },
       hospital: { id: null, name: null },
     },
+    medicine: {
+      id: '',
+    },
   }),
+
   apollo: {
     // patients.vue
     totalData: {
@@ -834,6 +834,33 @@ export default {
     //     // this.department.department_type = data.department_types[0]
     //   },
     // },
+
+    medicines_list: {
+      query: gql(`query MyQuery {
+                    medicine_names{
+                      name
+                    }
+                  }`),
+      update: (data) => {},
+      result({ data }) {
+        this.medicines_list = data.medicines_list
+      },
+    },
+
+    medicines_: {
+      query: gql(`query MyQuery {
+                    medicine_names(where: {name: {_eq: ${localStorage.getItem(
+                      'name'
+                    )}}}) {
+                      name
+                    }
+                  }`),
+      update: (data) => {},
+      result({ data }) {
+        this.medicines_list = data.name
+      },
+    },
+
     departments_parent_list: {
       query: gql(`query MyQuery {
         departments(where: {internal_hospital_id: {_eq: ${localStorage.getItem(
@@ -864,34 +891,33 @@ export default {
         }
         departments(where: {id: {_eq: ${this.objId}}}) {
           clinic_type_id
-                      code
-                      costcenter_id
-                      department_type_id
-                      hrm
-                      id
-                      idx
-                      in_service
-                      is_pause
-                      level
-                      manager
-                      name
-                      plain_name
-                      superior_id
-                      name_en
-                      name_ru
-                      department_type {
-                        id
-                        name
-                      }
-                      department_parent {
-                        id
-                        name
-                      }
-                      internal_hospital{
-                        id
-                        name
-                      }
-                      
+          code
+          costcenter_id
+          department_type_id
+          hrm
+          id
+          idx
+          in_service
+          is_pause
+          level
+          manager
+          name
+          plain_name
+          superior_id
+          name_en
+          name_ru
+          department_type {
+            id
+            name
+          }
+          department_parent {
+            id
+            name
+          }
+          internal_hospital{
+            id
+            name
+          }      
         }
       }`)
         return query

@@ -1,0 +1,11 @@
+Lịch sử thay đổi CSDL	
+	
+9/3/2022	insert into medicines (code,medicine_name_id,calculation_unit_id,content,medicine_type_id,medicine_guide_id,unit) values('PanaET3','4','1','Cafein 65mg;Paracetamol 500mg.','4','4','vỉ');
+10/3/2022	insert into medicines (code,medicine_name_id,calculation_unit_id,content,medicine_type_id,medicine_guide_id,unit) values('Pheni100','5','1','Phenytoin 100mg','4','4','lọ');
+	insert into medicines (code,medicine_name_id,calculation_unit_id,content,medicine_type_id,medicine_guide_id,unit) values('HPC650','6','1','Paracetamol 650mg, Tá dược vừa đủ  1 viên','4','4','vỉ')
+	insert into medicines (code,medicine_name_id,calculation_unit_id,content,medicine_type_id,medicine_guide_id,unit) values('Para500','3','1','Paracetamol 500mg','4','4','vỉ');
+11/3/2022	
+	insert into medicine_names (id,code,name,material_type_id, medicine_group_id,plain_name,production_company,country,fullname,active_ingredient_name,range,full_detail) values('3','Para500','Paracetammol 500mg','T','30','Paracetamol','Mediplantex','VietNam','Paracetamol 500mg,viên,(Mediplantex,VietNam)','Paracetamol','BV','Paracetamol 500mg,viên(Mediplantex,VietNam)');
+	insert into medicine_names (id,code,name,material_type_id, medicine_group_id,plain_name,production_company,country,fullname,active_ingredient_name,range,full_detail) values('4','PanaET3','Panadol Extra','T','30','Panadol','Sanofi','VietNam','Paracetamol 500mg,cafein 65mg,viên,(Sanofi,VietNam)','Paracetamol, cafein','BV','Paracetamol 500mg,cafein 65mg,viên(Panadol Extra,500mg+ 65mg,Mediplantex,VietNam)');
+	insert into medicine_names (id,code,name,material_type_id, medicine_group_id,plain_name,production_company,country,fullname,active_ingredient_name,range,full_detail) values('5','HPC650','Hapacol ','T','30','Hapacol','DHF pharma','VietNam','Paracetamol 650m,viên,(DHG pharma,VietNam)','Paracetamol','BV','Paracetamol 650mg,viên(Hapacol,650mg,DHG pharma,VietNam)');
+	insert into medicine_names (id,code,name,material_type_id, medicine_group_id,plain_name,production_company,country,fullname,active_ingredient_name,range,full_detail) values('6','Pheni100','Phenytoin 100mg','T','30','Phenytoin','Danapha','VietNam','Phenytoin 100mg,viên,(Danapha,VietNam)','Phenytoin','BV','Phenytoin,viên(Phenytoin 100mg,Danapha,VietNam)');
