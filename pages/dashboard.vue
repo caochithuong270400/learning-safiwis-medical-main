@@ -55,7 +55,7 @@
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model="department.name"
+                  v-model="department.code"
                   label="Mã bệnh nhân"
                   outlined
                   dense
@@ -65,11 +65,9 @@
               </v-col>
               <v-col cols="12" sm="4" lg="4" xl="4" md="4">
                 <v-text-field
-                  v-model.number="department.level"
+                  v-model="department.name"
                   label="Tên bệnh nhân"
                   disabled
-                  maxlength="1"
-                  :rules="[numberRule]"
                   outlined
                   dense
                   class="required"
@@ -79,11 +77,9 @@
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model.number="department.level"
+                  v-model="department.gender"
                   label="Giới tính"
                   disabled
-                  maxlength="1"
-                  :rules="[numberRule]"
                   outlined
                   dense
                   class="required"
@@ -92,17 +88,15 @@
               </v-col>
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-autocomplete
-                  v-model="department.department_parent"
+                <v-text-field
+                  v-model="department.name"
                   label="Năm sinh"
-                  :items="departments_parent_list"
-                  item-text="name"
-                  item-value="id"
-                  return-object
+                  disabled
                   outlined
                   dense
-                  clearable
-                ></v-autocomplete>
+                  class="required"
+                  color="red"
+                ></v-text-field>
               </v-col>
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
@@ -121,9 +115,9 @@
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-autocomplete
-                  v-model="department.department_parent"
+                  v-model="medicines.medicine_name.name"
                   label="Tên thuốc"
-                  :items="medicines_list"
+                  :items="medicine_name"
                   item-text="name"
                   item-value="id"
                   return-object
@@ -131,6 +125,21 @@
                   dense
                   clearable
                 ></v-autocomplete>
+              </v-col>
+
+              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                <v-text-field
+                  v-model="medicines.unit"
+                  label="Đơn vị tính"
+                  :items="medicines_list"
+                  item-text="unit"
+                  item-value="id"
+                  return-object
+                  outlined
+                  disabled
+                  :rules="[numberRule]"
+                  dense
+                ></v-text-field>
               </v-col>
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
@@ -143,40 +152,17 @@
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-text-field
-                  v-model.number="department.costcenter_id"
-                  label="Hạn sử dụng"
-                  outlined
-                  disabled
-                  :rules="[numberRule]"
-                  dense
-                ></v-text-field>
+              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                <v-checkbox :label="`Sáng`"></v-checkbox>
               </v-col>
-
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-autocomplete
-                  v-model="department.department_parent"
-                  label="Đơn vị tính"
-                  :items="departments_parent_list"
-                  item-text="name"
-                  item-value="gender"
-                  return-object
-                  outlined
-                  dense
-                  clearable
-                ></v-autocomplete>
+              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                <v-checkbox :label="`Trưa`"></v-checkbox>
               </v-col>
-
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-text-field
-                  v-model.number="department.costcenter_id"
-                  label="Số lượng tồn"
-                  outlined
-                  disabled
-                  :rules="[numberRule]"
-                  dense
-                ></v-text-field>
+              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                <v-checkbox :label="`Chiều`"></v-checkbox>
+              </v-col>
+              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                <v-checkbox :label="`Tối`"></v-checkbox>
               </v-col>
             </v-row>
             <client-only>
@@ -374,59 +360,6 @@
 import gql from 'graphql-tag'
 import firebase from 'firebase'
 
-const updatedepartmentGraphl = gql`
-  mutation MyMutation(
-    $id: Int
-    $superior_id: Int
-    $plain_name: String
-    $name: String
-    $manager: String
-    $is_pause: Boolean
-    $in_service: Boolean
-    $idx: Int
-    $hrm: Boolean
-    $department_type_id: Int
-    $costcenter_id: Int
-    $code: String
-    $clinic_type_id: Int
-    $level: Int
-    $name_en: String
-    $name_ru: String
-    $internal_hospital_id: Int
-  ) {
-    update_departments(
-      where: { id: { _eq: $id } }
-      _set: {
-        clinic_type_id: $clinic_type_id
-        code: $code
-        costcenter_id: $costcenter_id
-        department_type_id: $department_type_id
-        hrm: $hrm
-        in_service: $in_service
-        is_pause: $is_pause
-        manager: $manager
-        name: $name
-        plain_name: $plain_name
-        superior_id: $superior_id
-        idx: $idx
-        level: $level
-        name_en: $name_en
-        name_ru: $name_ru
-        internal_hospital_id: $internal_hospital_id
-      }
-    ) {
-      affected_rows
-    }
-  }
-`
-const deletePatientGraphl = gql`
-  mutation deletepatients($id: uuid) {
-    delete_patients(where: { id: { _eq: $id } }) {
-      affected_rows
-    }
-  }
-`
-
 export default {
   asyncData({ route, params }) {
     let objId = 0
@@ -447,10 +380,11 @@ export default {
     permission: {},
     departments_parent_list: [],
     medicines_list: [],
+    medicine_name: [],
     snackbar: false,
     textSnackbar: '',
-    department_types: [],
-    hospitals: [],
+    // department_types: [],
+    // hospitals: [],
     // patients.vue
     search: '',
     dialogDelete: false,
@@ -672,8 +606,10 @@ export default {
       department_parent: { id: null, name: null },
       hospital: { id: null, name: null },
     },
-    medicine: {
-      id: '',
+    medicines: {
+      medicine_name: { id: null, name: null },
+      medicine_name_id: '',
+      unit: null,
     },
   }),
 
@@ -835,31 +771,66 @@ export default {
     //   },
     // },
 
-    medicines_list: {
+    medicine_names_list: {
       query: gql(`query MyQuery {
                     medicine_names{
+                      id
                       name
                     }
                   }`),
       update: (data) => {},
       result({ data }) {
-        this.medicines_list = data.medicines_list
+        this.medicine_names_list = data.medicine_names
+      },
+    },
+    medicines_list: {
+      query: gql(`query MyQuery {
+                    medicines {
+                      medicine_name {
+                        name
+                        id
+                      }
+                      unit
+                      medicine_name_id
+                    }
+                    medicine_names{
+                      id
+                      name
+                    }
+                  }`),
+      update: (data) => {},
+      result({ data }) {
+        this.medicines_list = data.medicines
+        this.medicine_name = data.medicine_names
       },
     },
 
-    medicines_: {
-      query: gql(`query MyQuery {
-                    medicine_names(where: {name: {_eq: ${localStorage.getItem(
-                      'name'
-                    )}}}) {
-                      name
-                    }
-                  }`),
-      update: (data) => {},
-      result({ data }) {
-        this.medicines_list = data.name
-      },
-    },
+    // medicines_: {
+    //   query: gql(`query MyQuery {
+    //                 medicine_names{
+    //                   id
+    //                   name
+    //                 }
+    //               }`),
+    //   update: (data) => {},
+    //   result({ data }) {
+    //     if (
+    //       data === undefined ||
+    //       data === [] ||
+    //       data.medicine_names.length === 0
+    //     ) {
+    //       this.medicine.name = data.medicines[0]
+    //       console.log('add medicine_names screen')
+    //     } else {
+    //       this.medicine = data.medicines[0]
+    //       console.log(this.medicine_names)
+    //       this.title_name = this.medicine.name
+    //       if (this.medicine.name === null) {
+    //         this.medicine.name = { id: null, name: null }
+    //       }
+    //     }
+    //   },
+    // },
 
     departments_parent_list: {
       query: gql(`query MyQuery {
@@ -876,80 +847,33 @@ export default {
       },
     },
 
-    departments: {
-      query() {
-        const query = gql(`query MyQuery {
-          department_types(where: {internal_hospital_id: {_eq: ${localStorage.getItem(
-            'hospital'
-          )}}}) {
-          id
-          name
-        }
-         internal_hospitals {
-          id
-          name
-        }
-        departments(where: {id: {_eq: ${this.objId}}}) {
-          clinic_type_id
-          code
-          costcenter_id
-          department_type_id
-          hrm
-          id
-          idx
-          in_service
-          is_pause
-          level
-          manager
-          name
-          plain_name
-          superior_id
-          name_en
-          name_ru
-          department_type {
-            id
-            name
-          }
-          department_parent {
-            id
-            name
-          }
-          internal_hospital{
-            id
-            name
-          }      
-        }
-      }`)
-        return query
-      },
-      update: (data) => {},
-      result({ data }) {
-        this.department_types = data.department_types
-        this.hospitals = data.internal_hospitals
-        if (
-          data === undefined ||
-          data === [] ||
-          data.departments.length === 0
-        ) {
-          this.department.department_type = data.department_types[0]
-          this.department.internal_hospital = data.internal_hospitals[0]
-          console.log('add department screen')
-        } else {
-          this.department = data.departments[0]
-          console.log(this.department)
-          this.title_name = this.department.name
-          if (this.department.department_type === null) {
-            this.department.department_type = { id: null, name: null }
-          }
-          if (this.department.department_parent === null) {
-            this.department.department_parent = { id: null, name: null }
-          }
-          if (this.department.internal_hospital === null) {
-            this.department.internal_hospital = { id: null, name: null }
-          }
-        }
-      },
-    },
+    // departments: {
+    //   query() {
+    //     const query = gql(`query MyQuery {
+    //       department_types{
+    //       name
+    //     }
+    //   }`)
+    //     return query
+    //   },
+    //   update: (data) => {},
+    //   result({ data }) {
+    //     if (
+    //       data === undefined ||
+    //       data === [] ||
+    //       data.departments.length === 0
+    //     ) {
+    //       console.log('add department screen')
+    //     } else {
+    //       this.department = data.departments[0]
+    //       console.log(this.department)
+    //       this.title_name = this.department.name
+    //       if (this.department.department_parent === null) {
+    //         this.department.department_parent = { id: null, name: null }
+    //       }
+    //     }
+    //   },
+    // },
   },
 
   computed: {
@@ -1029,6 +953,7 @@ export default {
       }
     })
   },
+
   created() {
     this.initialize()
   },
@@ -1185,58 +1110,23 @@ export default {
       this.dialogDelete = true
     },
 
-    deleteItemConfirm() {
-      this.idPatient = this.patients[this.editedIndex].id
-      this.patients.splice(this.editedIndex, 1)
-      this.$apollo.mutate({
-        mutation: deletePatientGraphl,
-        variables: {
-          id: this.idPatient,
-        },
-        update: (store, { data: { delete_patients } }) => {
-          if (delete_patients.affected_rows) {
-            // eslint-disable-next-line
-            this.textSnackbar = 'Xoá bệnh nhân thành công'
-            this.snackbar = true
-            this.refreshQuery()
-          } else {
-            this.textSnackbar = 'Xoá bệnh nhân thất bại'
-            this.snackbar = true
-          }
-        },
-      })
-      this.closeDelete()
-      return 'sucess'
-    },
+    // close() {
+    //   this.dialog = false
+    //   this.dialogPatientDetail = false
+    //   this.dialogPatientHiCard = false
+    //   this.$nextTick(() => {
+    //     this.editedItem = Object.assign({}, this.defaultItem)
+    //     this.editedIndex = -1
+    //   })
+    // },
 
-    close() {
-      this.dialog = false
-      this.dialogPatientDetail = false
-      this.dialogPatientHiCard = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
-    },
-
-    closeDelete() {
-      this.dialogDelete = false
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-      })
-    },
-    save() {
-      this.dialogSave = false
-      if (this.checkInfo()) {
-        return
-      }
-      if (this.isEdit === true) {
-        this.updatedepartmentFunction()
-      } else {
-        this.adddepartmentFunction2()
-      }
-    },
+    // closeDelete() {
+    //   this.dialogDelete = false
+    //   this.$nextTick(() => {
+    //     this.editedItem = Object.assign({}, this.defaultItem)
+    //     this.editedIndex = -1
+    //   })
+    // },
     pushTo() {
       this.$toast.error(`Tài khoản không có quyền truy cập trang này`, {
         duration: 2000,
@@ -1288,97 +1178,59 @@ export default {
       str = str.replace(/\u02C6|\u0306|\u031B/g, '') // Â, Ê, Ă, Ơ, Ư
       return toUpperCase ? str.toUpperCase() : str
     },
-    updatedepartmentFunction() {
-      this.department.plain_name = this.convertViToEn(this.department.name)
-      console.log(this.department.department_parent)
-      this.$apollo.mutate({
-        mutation: updatedepartmentGraphl,
-        variables: {
-          id: this.department.id,
-          clinic_type_id: this.department.clinic_type_id,
-          code: this.department.code,
-          costcenter_id: this.department.costcenter_id,
-          department_type_id: this.department.department_type.id,
-          hrm: this.department.hrm,
-          in_service: this.department.in_service,
-          is_pause: this.department.is_pause,
-          manager: this.department.manager,
-          name: this.department.name,
-          plain_name: this.department.plain_name,
-          superior_id: this.department.department_parent.id,
-          level: this.department.level,
-          idx: this.department.idx,
-          name_en: this.department.name_en,
-          name_ru: this.department.name_ru,
-          internal_hospital_id: this.department.internal_hospital.id,
-        },
-        update: (store, { data: { update_departments } }) => {
-          if (update_departments.affected_rows) {
-            // eslint-disable-next-line
-            this.$apollo.queries.departments.refetch()
-            this.textSnackbar = 'Đã cập nhật phòng ban thành công'
-            this.snackbar = true
-            this.awaitDirect()
-          } else {
-            this.textSnackbar = 'Cập nhật phòng ban thất bại'
-            this.snackbar = true
-          }
-        },
-      })
-    },
     awaitDirect() {
       setTimeout(() => this.backToList(), 1500)
     },
-    adddepartmentFunction2() {
-      this.department.plain_name = this.convertViToEn(this.department.name)
-      const data_departments = {}
+    // adddepartmentFunction2() {
+    //   this.department.plain_name = this.convertViToEn(this.department.name)
+    //   const data_departments = {}
 
-      data_departments.clinic_type_id = this.department.clinic_type_id
-      data_departments.code = this.department.code
-      data_departments.costcenter_id = this.department.costcenter_id
-      data_departments.department_type_id = this.department.department_type.id
-      data_departments.hrm = this.department.hrm
-      data_departments.in_service = this.department.in_service
-      data_departments.is_pause = this.department.is_pause
-      data_departments.manager = this.department.manager
-      data_departments.name = this.department.name
-      data_departments.plain_name = this.department.plain_name
-      data_departments.superior_id = this.department.department_parent.id
-      data_departments.level = this.department.level
-      data_departments.idx = this.department.idx
+    //   data_departments.clinic_type_id = this.department.clinic_type_id
+    //   data_departments.code = this.department.code
+    //   data_departments.costcenter_id = this.department.costcenter_id
+    //   data_departments.department_type_id = this.department.department_type.id
+    //   data_departments.hrm = this.department.hrm
+    //   data_departments.in_service = this.department.in_service
+    //   data_departments.is_pause = this.department.is_pause
+    //   data_departments.manager = this.department.manager
+    //   data_departments.name = this.department.name
+    //   data_departments.plain_name = this.department.plain_name
+    //   data_departments.superior_id = this.department.department_parent.id
+    //   data_departments.level = this.department.level
+    //   data_departments.idx = this.department.idx
 
-      data_departments.name_en = this.department.name_en
-      data_departments.name_ru = this.department.name_ru
-      data_departments.internal_hospital_id = this.department.internal_hospital.id
+    //   data_departments.name_en = this.department.name_en
+    //   data_departments.name_ru = this.department.name_ru
+    //   data_departments.internal_hospital_id = this.department.internal_hospital.id
 
-      console.log('data_departments', data_departments)
-      const query = `mutation MyMutation($objects: [departments_insert_input!]!) {
-            insert_departments(objects: $objects) {
-              affected_rows
-              returning {
-                id
-              }
-            }
-          }`
-      console.log('query', query)
-      this.$apollo.mutate({
-        mutation: gql(query),
-        variables: {
-          objects: data_departments,
-        },
-        update: (store, { data: { insert_departments } }) => {
-          if (insert_departments.affected_rows) {
-            // eslint-disable-next-line
-            this.textSnackbar = 'Thêm phòng ban thành công'
-            this.snackbar = true
-            this.awaitDirect()
-          } else {
-            this.textSnackbar = 'Thêm phòng ban thất bại'
-            this.snackbar = true
-          }
-        },
-      })
-    },
+    //   console.log('data_departments', data_departments)
+    //   const query = `mutation MyMutation($objects: [departments_insert_input!]!) {
+    //         insert_departments(objects: $objects) {
+    //           affected_rows
+    //           returning {
+    //             id
+    //           }
+    //         }
+    //       }`
+    //   console.log('query', query)
+    //   this.$apollo.mutate({
+    //     mutation: gql(query),
+    //     variables: {
+    //       objects: data_departments,
+    //     },
+    //     update: (store, { data: { insert_departments } }) => {
+    //       if (insert_departments.affected_rows) {
+    //         // eslint-disable-next-line
+    //         this.textSnackbar = 'Thêm phòng ban thành công'
+    //         this.snackbar = true
+    //         this.awaitDirect()
+    //       } else {
+    //         this.textSnackbar = 'Thêm phòng ban thất bại'
+    //         this.snackbar = true
+    //       }
+    //     },
+    //   })
+    // },
   },
 }
 </script>
