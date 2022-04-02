@@ -2,7 +2,7 @@
   <client-only>
     <v-data-table
       :headers="headers"
-      :items="clinics"
+      :items="medicines"
       :server-items-length="getTotalData()"
       :items-per-page="itemsPerPage"
       :footer-props="{
@@ -14,21 +14,13 @@
       loading-text="Đang tải...vui lòng đợi"
       @pagination="onPaginationChange"
       @update:options="paginate"
+      style="width: 100%"
     >
       <template #[`item.is_pause`]="{ item }">
         <v-simple-checkbox v-model="item.is_pause" disabled></v-simple-checkbox>
       </template>
-      <template #[`item.in_service`]="{ item }">
-        <v-simple-checkbox
-          v-model="item.in_service"
-          disabled
-        ></v-simple-checkbox>
-      </template>
-      <template #[`item.hrm`]="{ item }">
-        <v-simple-checkbox v-model="item.hrm" disabled></v-simple-checkbox>
-      </template>
 
-      <template #top>
+      <!-- <template #top>
         <v-snackbar v-model="snackbar">
           {{ textSnackbar }}
 
@@ -39,7 +31,7 @@
           </template>
         </v-snackbar>
         <v-toolbar flat>
-          <v-toolbar-title class="blue--text">Phòng khám</v-toolbar-title>
+          <v-toolbar-title class="blue--text">Thuốc</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-text-field
             v-model="search"
@@ -57,7 +49,7 @@
             class="mb-2"
             @click="add()"
           >
-            Thêm phòng khám
+            Thêm thuốc
           </v-btn>
           <v-dialog v-model="dialogDelete" width="unset">
             <v-sheet outlined color="blue" rounded>
@@ -79,11 +71,11 @@
             </v-sheet>
           </v-dialog>
         </v-toolbar>
-      </template>
-
+      </template> -->
       <template slot="body.prepend">
         <tr>
           <th v-for="item in headers" :key="item.name">
+            <!-- //search under -->
             <v-text-field
               v-if="
                 item.filterable &&
@@ -95,8 +87,8 @@
               :label="item.text"
               @keyup.enter="onFilterChange(item)"
             >
-            </v-text-field
-            ><v-autocomplete
+            </v-text-field>
+            <v-autocomplete
               v-if="item.filterable && item.type === 'boolean'"
               v-model="item.dataFilter"
               :items="[
@@ -110,7 +102,7 @@
               @change="onFilterChange(item)"
               @click:clear="refreshDatable"
             ></v-autocomplete>
-            <v-autocomplete
+            <!-- <v-autocomplete
               v-if="
                 item.filterable &&
                 item.type === 'relation' &&
@@ -142,8 +134,8 @@
               clearable
               @change="onFilterChange(item)"
               @click:clear="refreshDatable"
-            ></v-autocomplete>
-            <v-menu
+            ></v-autocomplete> -->
+            <!-- <v-menu
               v-if="
                 item.filterable &&
                 (item.type == 'Datetime' || item.type == 'Date')
@@ -174,11 +166,11 @@
                 @click:date="onFilterChange(item)"
                 @input="item.menu = false"
               ></v-date-picker>
-            </v-menu>
+            </v-menu> -->
           </th>
         </tr>
       </template>
-      <template #[`item.actions`]="{ item }">
+      <!-- <template #[`item.actions`]="{ item }">
         <v-icon
           v-if="permission.is_edit"
           small
@@ -190,7 +182,7 @@
         <v-icon v-if="permission.is_delete" small @click="deleteClinic(item)">
           mdi-delete
         </v-icon>
-      </template>
+      </template> -->
       <template #no-data>
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
       </template>
@@ -205,27 +197,24 @@ import firebase from 'firebase'
 // import Datatable from '~/components/core/Datatable'
 
 const deleteClinicGraphl = gql`
-  mutation deleteclinics($id: Int) {
-    delete_clinics(where: { id: { _eq: $id } }) {
+  mutation deletemedicines($id: Int) {
+    delete_medicines(where: { id: { _eq: $id } }) {
       affected_rows
     }
   }
 `
 
 export default {
-  name: 'Clinics',
+  name: 'Medicines',
   data: () => ({
-    itemsPerPage: 10,
-    limit: 10,
-    offset: 0,
     search: '',
-    loading: true,
-    isFilter: false, //
     dialogDelete: false,
-    user: {},
-    permission: {},
     snackbar: false,
     textSnackbar: '',
+    user: {},
+    permission: {},
+    loading: true,
+    isFilter: false,
     headers: [
       {
         text: 'STT',
@@ -235,28 +224,28 @@ export default {
         class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       },
       {
-        text: 'Mã phòng khám',
-        value: 'code',
+        text: 'Tên thuốc',
+        value: 'medicine_name.name',
         type: 'String',
         dataFilter: '',
         filterable: true,
         sortable: true,
         class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       },
+      // {
+      //   text: 'Phân loại',
+      //   value: 'name',
+      //   type: 'String',
+      //   dataFilter: '',
+      //   filterable: true,
+      //   sortable: true,
+      //   class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+      // },
       {
-        text: 'Tên phòng khám',
-        value: 'name',
+        text: 'Đơn vị',
+        value: 'unit',
         type: 'String',
-        dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
-      },
-      {
-        text: 'Loại phòng ban',
-        value: 'department_type.name',
-        type: 'relation',
-        width: '160px',
+        // width: '160px',
         queryWhere: 'department_type: {name: {_like: "%',
         dataFilter: '',
         filterable: true,
@@ -273,8 +262,8 @@ export default {
       //   class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       // },
       {
-        text: 'Trưởng phòng',
-        value: 'manager',
+        text: 'Nhà sản xuất',
+        value: 'medicine_name.production_company',
         type: 'String',
         dataFilter: '',
         filterable: true,
@@ -282,16 +271,16 @@ export default {
         class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       },
 
-      {
-        text: 'Có thực hiện dịch vụ',
-        value: 'in_service',
-        type: 'boolean',
-        width: '160px',
-        dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
-      },
+      // {
+      //   text: 'Số lượng trong kho',
+      //   value: 'in_service',
+      //   type: 'boolean',
+      //   width: '160px',
+      //   dataFilter: '',
+      //   filterable: true,
+      //   sortable: true,
+      //   class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+      // },
       {
         text: 'Tạm ngưng',
         value: 'is_pause',
@@ -303,44 +292,23 @@ export default {
         class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       },
       {
-        text: 'quản lý nhân sự',
-        value: 'hrm',
-        type: 'boolean',
-        width: '160px',
-        dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
-      },
-      // {
-      //   text: 'Thuộc bệnh viện',
-      //   value: 'internal_hospital.code',
-      //   type: 'relation',
-      //   width: '160px',
-      //   queryWhere: 'internal_hospital: {name: {_like: "%',
-      //   dataFilter: '',
-      //   filterable: true,
-      //   sortable: true,
-      //   class: 'blue lighten-2 font-weight-medium text-h4 white--text',
-      // },
-      {
         text: '',
         value: 'actions',
         sortable: false,
         class: 'blue lighten-2 font-weight-medium text-h4 white--text',
       },
     ],
-
     filterWhere: `where: {  internal_hospital_id: {_eq: ${localStorage.getItem(
       'hospital'
     )}} }`,
-    clinics: [],
+    itemsPerPage: 10,
+    limit: 10,
+    offset: 0,
+    medicines: [],
+    internal_hospitals: [],
     stringSort: 'created_at: desc',
     department_types: [],
     editedIndex: -1,
-
-    internal_hospitals: [],
-
     editedItem: {
       id: '',
       code: '',
@@ -380,8 +348,8 @@ export default {
   apollo: {
     totalData: {
       query() {
-        return gql(`query getTotalclinics {
-            totalData: clinics_aggregate(order_by: { created_at: desc },${this.filterWhere}) {
+        return gql(`query getTotalmedicines {
+            totalData: medicines_aggregate(order_by: { created_at: desc },${this.filterWhere}) {
                 aggregate {
                     count
                 }
@@ -389,10 +357,11 @@ export default {
         }`)
       },
       skip() {
-        return !this.clinics
+        return !this.medicines
       },
     },
-    clinics: {
+
+    medicines: {
       query() {
         // const query = this.model.getQuery('list', {
         //   alias: 'tableData',
@@ -400,48 +369,77 @@ export default {
         //   offset: this.offset,
         // })
         const queryl = gql`query MyQuery {
-                    clinics(order_by: {${this.stringSort}},${this.filterWhere},limit:${this.limit} , offset: ${this.offset},) {
+                    medicines(order_by: {${this.stringSort}},${this.filterWhere},limit:${this.limit} , offset: ${this.offset},) {
+                      calculation_unit_id
+                      medicine_name {
+                        id
+                        name
+                        fullname
+                        production_company
+                      }
                       code
-                      hrm
+                      unit
+                      TT43
+                      account_number
+                      accounting_code
+                      attribute_1
+                      attribute_2
+                      attribute_3
+                      attribute_4
+                      code_ven
+                      content
+                      contract_period
+                      contraindications
+                      country_id
                       created_at
-                      idx
+                      created_by
+                      detaile_content
+                      diagnostic_drug
+                      direction
                       id
+                      internal_hospital_id
+                      is_hi
                       is_pause
-                      manager
-                      name
-                      name_en
-                      name_ru
-                      in_service
-                      ref_id
-                      level
+                      is_pause_out
+                      is_pause_reserve
+                      is_special_interest
+                      itc
+                      manufacturer_id
+                      medicine_classify_id
+                      medicine_grouping_id
+                      medicine_guide_id
+                      medicine_name_id
+                      note
+                      medicine_type_id
+                      number_ttbyt
+                      number_tttt
+                      pause_date
+                      reference_number
+                      registered_number
                       updated_at
-                      plain_name
-                      department_type {
-                        id
-                        name
-                      }
-                      internal_hospital {
-                        id
-                        name
-                        code
-                      }
+                      updated_by
+                      unit
+                      uses
+                      vat
+                      warning
                     }
                   }
                `
-        for (let index = 0; index < this.clinics.length; index++) {
-          const element = this.clinics[index]
+        for (let index = 0; index < this.medicines.length; index++) {
+          const element = this.medicines[index]
           element.stt = index + 1 + this.offset
         }
         if (
-          this.clinics.length >= 0 ||
-          (this.isFilter && this.clinics.length === 0)
+          this.medicines.length >= 0 ||
+          (this.isFilter && this.medicines.length === 0)
         ) {
           this.loading = false
         }
+        // console.log('this.medicines', this.medicines)
         return queryl
       },
       skip() {
-        return !this.clinics
+        return !this.medicines
       },
     },
     listParentDepartments: {
@@ -468,9 +466,7 @@ export default {
   },
   computed: {
     formTitle() {
-      return this.editedIndex === -1
-        ? 'Thêm phòng khám'
-        : 'Cập nhật thông tin phòng khám'
+      return this.editedIndex === -1 ? 'Thêm thuốc' : 'Cập nhật thông tin thuốc'
     },
   },
 
@@ -520,13 +516,14 @@ export default {
           }
         }
       `
+
         this.$apollo
           .query({
             query: querySearch,
             fetchPolicy: 'network-only',
           })
           .then((response) => {
-            console.log('this.permission', response)
+            // console.log('this.permission', response)
             if (response.data.users.length > 0) {
               this.permission =
                 response.data.users[0].permission_group.permission_group_details[0]
@@ -563,16 +560,15 @@ export default {
 
   methods: {
     initialize() {
-      this.clinics = []
+      this.medicines = []
     },
 
     add() {
       this.$router.push({
-        path: `/list/old_core/clinic/clinic_edit`,
+        path: `/list/old_core/medicine/medicine_edit`,
         query: { id: 0 },
       })
     },
-    //Hàm tìm kiếm trên thanh tìm kiếm
     searchAll() {
       this.filterWhere = 'where: {_or: [ '
 
@@ -610,7 +606,7 @@ export default {
           // }
         }
       }
-      console.log('this.filterWhere', this.filterWhere)
+      // console.log('this.filterWhere', this.filterWhere)
       if (boolCheckFilter) {
         this.filterWhere =
           this.filterWhere +
@@ -630,7 +626,7 @@ export default {
     },
     refreshQuery() {
       this.loading = true
-      this.$apollo.queries.clinics.refresh()
+      this.$apollo.queries.medicines.refresh()
       this.$apollo.queries.totalData.refresh()
     },
     getTotalData() {
@@ -665,79 +661,80 @@ export default {
         } else {
           this.stringSort = `${vale.sortBy[0]}: ${tempSortOrder}`
         }
-        console.log('asdasd')
+        // console.log('asdasd')
       }
     },
     onFilterChange(item) {
-      console.log('item', item)
-      if (item.dataFilter) {
-        this.filterWhere = 'where:{'
-        if (item.type === 'String') {
-          this.filterWhere =
-            this.filterWhere + `${item.value}: {_like: "%${item.dataFilter}%"}`
-        } else if (item.type === 'int') {
-          this.filterWhere =
-            this.filterWhere + `${item.value}: {_eq: ${item.dataFilter}}`
-        } else if (item.type === 'Datetime') {
-          const date2 = item.dataFilter + ' ' + '23:59:59'
-          this.filterWhere =
-            this.filterWhere +
-            `${item.value}: {_gte: "${item.dataFilter}",_lte: "${date2}"}`
-        } else if (item.type === 'Date') {
-          this.filterWhere =
-            this.filterWhere + `${item.value}: {_eq: "${item.dataFilter}"}`
-        } else if (item.type === 'relation') {
-          this.filterWhere =
-            this.filterWhere + `${item.queryWhere}${item.dataFilter.name}%"}}`
-        } else if (item.type === 'boolean' || item.type === 'enum') {
-          this.filterWhere =
-            this.filterWhere + `${item.value}: {_eq: ${item.dataFilter.code}}`
-        } else if (item.type === 'relationsingle') {
-          this.filterWhere =
-            this.filterWhere + `${item.queryWhere}${item.dataFilter}%"}}`
-        }
-        this.filterWhere =
-          this.filterWhere +
-          `, internal_hospital_id: {_eq: ${localStorage.getItem('hospital')}}}`
-        this.isFilter = true
-        this.refreshQuery()
-      } else {
-        this.refreshDatable()
-      }
+      console.log(this.medicines)
+      // console.log('item', item.value)
+      // if (item.dataFilter) {
+      //   this.filterWhere = 'where:{'
+      //   if (item.type === 'String') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.value}: {_like: "%${item.dataFilter}%"}`
+      //   } else if (item.type === 'int') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.value}: {_eq: ${item.dataFilter}}`
+      //   } else if (item.type === 'Datetime') {
+      //     const date2 = item.dataFilter + ' ' + '23:59:59'
+      //     this.filterWhere =
+      //       this.filterWhere +
+      //       `${item.value}: {_gte: "${item.dataFilter}",_lte: "${date2}"}`
+      //   } else if (item.type === 'Date') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.value}: {_eq: "${item.dataFilter}"}`
+      //   } else if (item.type === 'relation') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.queryWhere}${item.dataFilter.name}%"}}`
+      //   } else if (item.type === 'boolean' || item.type === 'enum') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.value}: {_eq: ${item.dataFilter.code}}`
+      //   } else if (item.type === 'relationsingle') {
+      //     this.filterWhere =
+      //       this.filterWhere + `${item.queryWhere}${item.dataFilter}%"}}`
+      //   }
+      //   this.filterWhere =
+      //     this.filterWhere +
+      //     `, internal_hospital_id: {_eq: ${localStorage.getItem('hospital')}}}`
+      //   this.isFilter = true
+      //   this.refreshQuery()
+      // } else {
+      //   this.refreshDatable()
+      // }
     },
     editItem(item) {
-      this.editedIndex = this.clinics.indexOf(item)
+      this.editedIndex = this.medicines.indexOf(item)
       this.editedItem = Object.assign({}, item)
 
       this.$router.push({
-        path: `/list/old_core/clinic/clinic_edit`,
+        path: `/list/old_core/medicine/medicine_edit`,
         query: { id: this.editedItem.id },
       })
     },
 
     deleteClinic(item) {
-      this.editedIndex = this.clinics.indexOf(item)
+      this.editedIndex = this.medicines.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialogDelete = true
     },
 
     deleteItemConfirm() {
-      this.idClinic = this.clinics[this.editedIndex].id
-      this.clinics.splice(this.editedIndex, 1)
+      this.idClinic = this.medicines[this.editedIndex].id
+      this.medicines.splice(this.editedIndex, 1)
       this.$apollo.mutate({
         mutation: deleteClinicGraphl,
         variables: {
           id: this.idClinic,
         },
-        update: (store, { data: { delete_clinics } }) => {
-          if (delete_clinics.affected_rows) {
-            console.log('xóa phòng khám')
+        update: (store, { data: { delete_medicines } }) => {
+          if (delete_medicines.affected_rows) {
+            // console.log('xóa thuốc')
             // eslint-disable-next-line
-            this.textSnackbar = 'Xóa phòng khám thành công'
+            this.textSnackbar = 'Xóa thuốc thành công'
             this.snackbar = true
             this.refreshQuery()
           } else {
-            this.textSnackbar = 'Xóa phòng khám thất bại'
+            this.textSnackbar = 'Xóa thuốc thất bại'
             this.snackbar = true
           }
         },

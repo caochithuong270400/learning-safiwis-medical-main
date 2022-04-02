@@ -220,17 +220,13 @@ export default {
     limit: 10,
     offset: 0,
     search: '',
+    loading: true,
+    isFilter: false,
     dialogDelete: false,
     user: {},
     permission: {},
-    loading: true,
-    isFilter: false,
     snackbar: false,
     textSnackbar: '',
-    filterWhere: `where: {  internal_hospital_id: {_eq: ${localStorage.getItem(
-      'hospital'
-    )}} }`,
-    stringSort: 'created_at: desc',
     headers: [
       {
         text: 'STT',
@@ -336,7 +332,11 @@ export default {
       },
     ],
 
+    filterWhere: `where: {  internal_hospital_id: {_eq: ${localStorage.getItem(
+      'hospital'
+    )}} }`,
     departments: [],
+    stringSort: 'created_at: desc',
     department_types: [],
     editedIndex: -1,
 
@@ -378,6 +378,20 @@ export default {
   }),
 
   apollo: {
+    totalData: {
+      query() {
+        return gql(`query getTotaldeparments {
+            totalData: departments_aggregate(order_by: { created_at: desc },${this.filterWhere}) {
+                aggregate {
+                    count
+                }
+            }
+        }`)
+      },
+      skip() {
+        return !this.departments
+      },
+    },
     departments: {
       query() {
         // const query = this.model.getQuery('list', {
@@ -428,20 +442,6 @@ export default {
           this.loading = false
         }
         return queryl
-      },
-      skip() {
-        return !this.departments
-      },
-    },
-    totalData: {
-      query() {
-        return gql(`query getTotaldeparments {
-            totalData: departments_aggregate(order_by: { created_at: desc },${this.filterWhere}) {
-                aggregate {
-                    count
-                }
-            }
-        }`)
       },
       skip() {
         return !this.departments

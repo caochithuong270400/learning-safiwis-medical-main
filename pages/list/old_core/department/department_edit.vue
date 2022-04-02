@@ -21,11 +21,6 @@
         <v-icon color="white" left>mdi-content-save</v-icon>
         Lưu
       </v-btn>
-      <v-spacer></v-spacer>
-      <v-btn tile color="blue" :disabled="!valid" @click="dialogSave = true">
-        <v-icon color="white" left>mdi-content-print</v-icon>
-        In
-      </v-btn>
 
       <!-- <v-btn icon>
         <v-icon>mdi-heart</v-icon>

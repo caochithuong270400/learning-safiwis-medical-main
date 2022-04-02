@@ -34,6 +34,7 @@
         <template slot="body.prepend">
           <tr>
             <th v-for="item in headers" :key="item.name">
+              <!-- <p>{{item.name}}</p> -->
               <v-text-field
                 v-if="
                   item.filterable &&
@@ -253,8 +254,7 @@ export default {
           element.stt = index + 1 + this.offset
         }
         if (
-          this.hospital_units.length >= 0 ||
-          (this.isFilter && this.hospital_units.length === 0)
+          this.hospital_units.length >= 0 || (this.isFilter && this.hospital_units.length === 0)
         ) {
           this.loading = false
         }
@@ -313,6 +313,7 @@ export default {
   mounted() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
+        // console.log("Đây là user: ", user);
         this.user.id = user.uid
         this.user.email = user.email
         const querySearch = gql`
@@ -355,6 +356,7 @@ export default {
             fetchPolicy: 'network-only',
           })
           .then((response) => {
+            console.log("response", response);
             if (response.data.users.length > 0) {
               this.permission =
                 response.data.users[0].permission_group.permission_group_details[0]

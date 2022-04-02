@@ -1,5 +1,101 @@
 <template>
   <v-app dark>
+    <v-navigation-drawer
+      v-if="isLogin"
+      v-model="drawer"
+      :mini-variant="miniVariant"
+      :clipped="clipped"
+      class="mx-auto"
+      color="blue darken-4"
+      permanent
+      fixed
+      app
+      disable-route-watcher
+      disable-resize-watcher
+      width="280"
+    >
+      <img
+        src="../static/logo-taimuihongsg.jpg"
+        alt="Logo"
+        height="120"
+        class="logo justify-center pa-1"
+        width="100%"
+      />
+      <!-- </v-row> -->
+      <v-row justify="space-around" class="pt-3 pb-3"
+        ><v-btn
+          class="ml-2"
+          dark
+          min-width="0"
+          text
+          @click="toLink('dashboard')"
+        >
+          <v-icon>mdi-home-circle</v-icon>
+        </v-btn>
+        <v-menu
+          bottom
+          left
+          offset-y
+          origin="top right"
+          transition="scale-transition"
+        >
+          <template #activator="{ attrs, on }">
+            <v-btn dark min-width="0" text v-bind="attrs" v-on="on">
+              <v-badge color="red" overlap>
+                <template #badge>
+                  <span>5</span>
+                </template>
+
+                <v-icon>mdi-bell</v-icon>
+              </v-badge>
+            </v-btn>
+          </template>
+        </v-menu>
+
+        <v-menu :close-on-content-click="closeMenu" offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn min-width="0" dark text v-bind="attrs" v-on="on">
+              <v-icon>mdi-account</v-icon>
+            </v-btn>
+          </template>
+          <v-list dense>
+            <v-list-item color="primary" @click="changePassword()">
+              <v-list-item-title> Thông tin tài khoản</v-list-item-title>
+            </v-list-item>
+            <v-list-item color="primary" @click="dialogSignOut = true">
+              <v-list-item-title> Đăng xuất</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu></v-row
+      >
+      <v-list nav dense class="white_list">
+        <v-list-item-group v-for="(item, i) in items" :key="i">
+          <v-list-item :to="item.to" class="v-list-item">
+            <v-list-item-icon>
+              <v-icon dark>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+
+            <v-list-item-title v-text="item.text" />
+          </v-list-item>
+          <v-divider class="white"></v-divider>
+        </v-list-item-group>
+        <!-- </div> -->
+      </v-list>
+    </v-navigation-drawer>
+    <v-dialog v-model="dialogSignOut" width="unset">
+      <v-card>
+        <v-card-title class="headline lighten-2 blue--text">
+          Bạn có chắc muốn đăng xuất không?</v-card-title
+        >
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="dialogSignOut = false"
+            >Không</v-btn
+          >
+          <v-btn color="blue darken-1" text @click="signOut()">Có</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-app-bar
       color="blue darken-4"
       v-if="isLogin"
@@ -72,7 +168,7 @@ export default {
       links: [
         {
           icon: 'mdi-chart-bubble',
-          text: 'Quản lý khám bệnh',
+          text: 'Quản lý bệnh viện',
           active: false,
           // to: '/list/old_core/patients',
           subLinks: [
@@ -103,6 +199,28 @@ export default {
             },
           ],
         },
+        {
+          icon: 'mdi-chart-bubble',
+          text: 'Quản lý kê đơn thuốc',
+          active: false,
+          subLinks: [
+            {
+              icon: 'mdi-chart-bubble',
+              text: 'Danh sách thuốc',
+              to: '/list/old_core/medicine/medicines',
+            },
+            {
+              icon: 'mdi-chart-bubble',
+              text: 'Quản lý đơn thuốc',
+              // to: '/list/old_core/medicine/medicines',
+            },
+            {
+              icon: 'mdi-chart-bubble',
+              text: 'Kê toa thuốc',
+              to: '/list/old_core/dashboard/dashboards',
+            },
+          ],
+        },
       ],
       miniVariant: false,
       right: true,
@@ -125,7 +243,7 @@ export default {
     initialize() {
       firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-          console.log('?sss?????', user)
+          // console.log('?sss?????', user)
           this.user.id = user.uid
           this.user.email = user.email
           // update data or vuex state
