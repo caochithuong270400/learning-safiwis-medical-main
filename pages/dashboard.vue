@@ -2,7 +2,7 @@
   <v-form id="edit-form" ref="form" v-model="valid" lazy-validation>
     <v-toolbar flat>
       <v-toolbar-title v-if="isEdit" class="blue--text font-weight-bold">{{
-        `Kê đơn thuốc: ${title_name}`
+        `Kê đơn thuốc`
       }}</v-toolbar-title>
       <v-toolbar-title v-if="!isEdit" class="blue--text font-weight-bold">{{
         `Thêm đơn thuốc `
@@ -41,13 +41,14 @@
           :reverse-transition="false"
         >
           <v-container fluid style="background-color: white">
-            <v-row class="pa-5">
+            <v-row class="pa-3">
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model="department.code"
+                  v-model="receptionIdInput"
                   label="Số phiếu"
                   outlined
                   dense
+                  hide-details
                   class="required"
                   color="red"
                 ></v-text-field>
@@ -55,33 +56,38 @@
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model="department.code"
+                  v-model="patientInfo.medical_code"
                   label="Mã bệnh nhân"
+                  disabled
                   outlined
                   dense
+                  hide-details
                   class="required"
                   color="red"
                 ></v-text-field>
               </v-col>
               <v-col cols="12" sm="4" lg="4" xl="4" md="4">
                 <v-text-field
-                  v-model="department.name"
+                  v-model="patientInfo.fullname"
                   label="Tên bệnh nhân"
                   disabled
                   outlined
                   dense
+                  hide-details
                   class="required"
                   color="red"
                 ></v-text-field>
+                <!-- :color="patientInfo.fullname ? 'black' : 'red'" -->
               </v-col>
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model="department.gender"
+                  v-model="patientInfo.gender"
                   label="Giới tính"
                   disabled
                   outlined
                   dense
+                  hide-details
                   class="required"
                   color="red"
                 ></v-text-field>
@@ -89,93 +95,148 @@
 
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
-                  v-model="department.name"
-                  label="Năm sinh"
+                  v-model="patientInfo.birthday"
+                  label="Ngày sinh"
                   disabled
                   outlined
                   dense
+                  hide-details
                   class="required"
                   color="red"
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-autocomplete
-                  v-model="department.department_parent"
+              <v-col cols="12" sm="4" lg="4" xl="4" md="4">
+                <v-text-field
+                  v-model="patientInfo.object_patients"
                   label="Đối tượng"
-                  :items="departments_parent_list"
-                  item-text="name"
-                  item-value="id"
-                  return-object
-                  outlined
-                  dense
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-autocomplete
-                  v-model="medicines.medicine_name.name"
-                  label="Tên thuốc"
-                  :items="medicine_name"
-                  item-text="name"
-                  item-value="id"
-                  return-object
-                  outlined
-                  dense
-                  clearable
-                ></v-autocomplete>
-              </v-col>
-
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-text-field
-                  v-model="medicines.unit"
-                  label="Đơn vị tính"
-                  :items="medicines_list"
-                  item-text="unit"
-                  item-value="id"
-                  return-object
-                  outlined
                   disabled
-                  :rules="[numberRule]"
-                  dense
-                ></v-text-field>
-              </v-col>
-
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
-                <v-text-field
-                  v-model.number="department.idx"
-                  label="Số ngày"
-                  :rules="[numberRule]"
                   outlined
                   dense
+                  hide-details
+                  class="required"
+                  color="red"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="4" sm="8" lg="8" xl="8" md="8">
+                <v-text-field
+                  v-model="diagnose"
+                  label="Chẩn đoán"
+                  outlined
+                  dense
+                  hide-details
                 ></v-text-field>
               </v-col>
 
-              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
-                <v-checkbox :label="`Sáng`"></v-checkbox>
-              </v-col>
-              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
-                <v-checkbox :label="`Trưa`"></v-checkbox>
-              </v-col>
-              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
-                <v-checkbox :label="`Chiều`"></v-checkbox>
-              </v-col>
-              <v-col cols="4" sm="1" lg="1" xl="1" md="1">
-                <v-checkbox :label="`Tối`"></v-checkbox>
+              <v-row class="pa-3">
+                <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                  <v-autocomplete
+                    v-model="medicineNameInput"
+                    label="Tên thuốc"
+                    :items="medicine_name"
+                    item-text="name"
+                    item-value="name"
+                    outlined
+                    dense
+                    hide-details
+                    clearable
+                  ></v-autocomplete>
+                </v-col>
+
+                <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                  <v-text-field
+                    v-model="medicineInfo"
+                    label="Đơn vị tính"
+                    item-text="unit"
+                    outlined
+                    disabled
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                  <v-text-field
+                    v-model="medicine_use"
+                    label="Đơn vị sử dụng"
+                    outlined
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+                  <v-text-field
+                    v-model.number="amount_day"
+                    label="Số ngày"
+                    outlined
+                    type="number"
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                  <v-text-field
+                    v-model.number="amount_morning"
+                    label="Sáng"
+                    outlined
+                    type="number"
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                  <v-text-field
+                    v-model.number="amount_evening"
+                    label="Trưa"
+                    outlined
+                    type="number"
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                  <v-text-field
+                    v-model.number="amount_afternoon"
+                    label="Chiều"
+                    outlined
+                    hide-details
+                    type="number"
+                    dense
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="4" sm="1" lg="1" xl="1" md="1">
+                  <v-text-field
+                    v-model.number="amount_night"
+                    label="Tối"
+                    outlined
+                    type="number"
+                    dense
+                    hide-details
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-col cols="4" sm="12" lg="12" xl="12" md="12">
+                <v-text-field
+                  v-model="note_prescription"
+                  label="Ghi chú"
+                  outlined
+                  dense
+                  hide-details
+                ></v-text-field>
               </v-col>
             </v-row>
             <client-only>
               <v-data-table
                 :headers="headers"
-                :items="patients"
+                :items="list_medicines_add"
                 :server-items-length="getTotalData()"
                 :items-per-page="itemsPerPage"
                 :footer-props="{
                   itemsPerPageText: 'số dòng mỗi trang',
                   pageText: '{0}-{1} trên {2}',
                 }"
-                class="elevation-1"
+                class="elevation-1 text-center"
                 :loading="loading"
                 loading-text="Đang tải...vui lòng đợi"
                 @pagination="onPaginationChange"
@@ -208,24 +269,39 @@
                       Thêm vào toa
                     </v-btn>
 
-                    <v-dialog v-model="dialogDelete" width="unset">
+                    <v-dialog v-model="dialogWarning" width="unset">
                       <v-sheet outlined color="blue" rounded>
                         <v-card>
-                          <v-card-title class="headline blue--text"
-                            >Bạn có chắc xóa không?</v-card-title
-                          >
+                          <v-card-title class="headline blue--text">
+                            <h5>{{ title_popup_warning }}</h5>
+                            <hr />
+                            <p>
+                              thuốc không thích hợp với bệnh nhân
+                              {{ content_popup_warning }}
+                            </p>
+                            <p><br />Tiếp tục thêm?</p>
+                          </v-card-title>
+
                           <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
                               color="blue darken-1"
+                              @click="
+                                ;(dialogWarning = false),
+                                  (title_popup_warning = ''),
+                                  (content_popup_warning = '')
+                              "
                               text
-                              @click="closeDelete"
                               >Không</v-btn
                             >
                             <v-btn
                               color="blue darken-1"
+                              @click="
+                                ;(is_add_medicine = true),
+                                  add(),
+                                  (dialogWarning = false)
+                              "
                               text
-                              @click="deleteItemConfirm"
                               >Có</v-btn
                             >
                             <v-spacer></v-spacer>
@@ -235,85 +311,7 @@
                     </v-dialog>
                   </v-toolbar>
                 </template>
-                <template slot="body.prepend">
-                  <tr>
-                    <th v-for="item in headers" :key="item.name">
-                      <v-text-field
-                        v-if="
-                          item.filterable &&
-                          (item.type == 'String' || item.type == 'int')
-                        "
-                        v-model="item.dataFilter"
-                        :label="item.text"
-                        @keyup.enter="onFilterChange(item)"
-                      >
-                      </v-text-field>
 
-                      <v-autocomplete
-                        v-if="item.filterable && item.type === 'boolean'"
-                        v-model="item.dataFilter"
-                        :items="[
-                          { code: 'true', name: 'Có' },
-                          { code: 'false', name: 'Không' },
-                        ]"
-                        :label="item.text"
-                        item-text="name"
-                        return-object
-                        clearable
-                        @change="onFilterChange(item)"
-                        @click:clear="refreshDatable"
-                      ></v-autocomplete>
-
-                      <v-autocomplete
-                        v-if="item.filterable && item.type === 'enum'"
-                        v-model="item.dataFilter"
-                        :items="[
-                          { code: 'male', name: 'Nam' },
-                          { code: 'female', name: 'Nữ' },
-                        ]"
-                        :label="item.text"
-                        item-text="name"
-                        item-value="code"
-                        return-object
-                        clearable
-                        @change="onFilterChange(item)"
-                        @click:clear="refreshDatable"
-                      ></v-autocomplete>
-                      <v-menu
-                        v-if="
-                          item.filterable &&
-                          (item.type == 'Datetime' || item.type == 'Date')
-                        "
-                        ref="item.menu"
-                        v-model="item.menu"
-                        :close-on-content-click="false"
-                        transition="scale-transition"
-                        offset-y
-                        max-width="290px"
-                        min-width="auto"
-                      >
-                        <template #activator="{ on, attrs }">
-                          <v-text-field
-                            v-model="item.dataFilter"
-                            clearable
-                            readonly
-                            :label="item.text"
-                            v-bind="attrs"
-                            v-on="on"
-                            @click:clear="refreshDatable"
-                          ></v-text-field>
-                        </template>
-                        <v-date-picker
-                          v-model="item.dataFilter"
-                          no-title
-                          locale="vi"
-                          @click:date="onFilterChange(item)"
-                          @input="item.menu = false"
-                        ></v-date-picker>
-                      </v-menu>
-                    </th>
-                  </tr>
-                </template>
                 <template #[`item.actions`]="{ item }">
                   <v-icon
                     v-if="permission.is_edit"
@@ -373,6 +371,10 @@ export default {
     return { objId, isEdit }
   },
   data: () => ({
+    medicineNameInput: '',
+    medicineInfo: [],
+    receptionIdInput: '',
+    patientInfo: [],
     valid: false,
     isEdit: true,
     dialogSave: false,
@@ -387,6 +389,7 @@ export default {
     // hospitals: [],
     // patients.vue
     search: '',
+    dialogWarning: false,
     dialogDelete: false,
     loading: true,
     isFilter: false,
@@ -399,76 +402,87 @@ export default {
         value: 'stt',
         align: 'start',
         sortable: false,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
-        text: 'Tên Dược',
-        value: 'fullname',
+        text: 'Tên thuốc',
+        value: 'name',
         dataFilter: '',
         type: 'String',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
-        text: 'Đơn vị tính',
-        value: 'gender',
-        type: 'enum',
-        dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
-      },
-      {
-        text: 'Số lượng sáng',
-        value: 'hospital_code',
+        text: 'Sáng',
+        value: 'mor_num',
         dataFilter: '',
         type: 'String',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
-        text: 'Số lượng trưa',
-        value: 'id_card_no',
+        text: 'Trưa',
+        value: 'eve_num',
         type: 'String',
         dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
-        text: 'Số lượng chiều',
-        value: 'birthday',
+        text: 'Chiều',
+        value: 'aft_num',
         type: 'Date',
         dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
-        text: 'Số lượng tối',
-        value: 'phone_number',
+        text: 'Tối',
+        value: 'nig_num',
         type: 'String',
         dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
         text: 'Tổng số lượng',
-        value: 'medical_code',
+        value: 'total',
         type: 'String',
         dataFilter: '',
-        filterable: true,
-        sortable: true,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
+      },
+      {
+        text: 'Cách sử dụng',
+        value: 'use_way',
+        type: 'String',
+        dataFilter: '',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
+      },
+      {
+        text: 'Ghi chú',
+        value: 'note',
+        type: 'String',
+        dataFilter: '',
+        sortable: false,
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
       {
         text: '',
-        value: 'actions',
+        value: '',
         sortable: false,
-        class: 'blue lighten-2 font-weight-medium text-h4 white--text',
+        class:
+          'blue lighten-2 font-weight-medium text-h5 white--text text-center',
       },
     ],
 
@@ -483,6 +497,41 @@ export default {
     },
 
     patients: [],
+    list_medicines: [],
+    prescription_info: [],
+    // thông tin thuốc
+    maximum_dose: 0,
+    // data đưa thuốc vào đơn
+    medicine_choose: [],
+    medicine_name_choose: [],
+    list_medicines_add: [],
+    stt_medicine_list: 0,
+    amount_morning: 0,
+    amount_evening: 0,
+    amount_afternoon: 0,
+    amount_night: 0,
+    amount_day: 0,
+    medicine_use: '',
+    note_prescription: '',
+    diagnose: '',
+    is_add_medicine: false,
+    use_way: [],
+    // thông tin bệnh nhân
+    to_day: new Date(),
+    year_month_day: '',
+    patient_age: 0,
+    patient_month: 0,
+    // data warning
+    str: [],
+    str_case: [],
+    casename_content: [],
+    casename_warning: '',
+    content_warning: [],
+    popup_contents: [],
+    title_popup_warning: '',
+    content_popup_warning: '',
+    search_dianose: '',
+
     itemsPerPage: 10,
     limit: 10,
     offset: 0,
@@ -524,15 +573,6 @@ export default {
       ethnic_group_id: 1,
       career_id: 1,
       employee_id: 1,
-
-      // work_unit: { id: null, name: null },
-      // country: { id: null, name: null },
-      // state: { id: null, name: null },
-      // district: { id: null, name: null },
-      // ward: { id: null, name: null },
-      // ethnic_group: { id: null, name: null },
-      // career: { id: null, name: null },
-      // employee: { id: null, name: null },
 
       work_unit: { id: null, name: null },
       country: { id: null, name: null },
@@ -608,6 +648,7 @@ export default {
     },
     medicines: {
       medicine_name: { id: null, name: null },
+      medicine_name_choose: { name: null },
       medicine_name_id: '',
       unit: null,
     },
@@ -615,6 +656,7 @@ export default {
 
   apollo: {
     // patients.vue
+    // lấy tổng data
     totalData: {
       query() {
         return gql(`query getTotalpatients {
@@ -629,13 +671,123 @@ export default {
         return !this.patients
       },
     },
+
+    patientInfo: {
+      query() {
+        if (this.receptionIdInput === '') {
+          this.patientInfo.medical_code = ''
+          this.patientInfo.fullname = ''
+          this.patientInfo.gender = ''
+          this.patientInfo.birthday = ''
+
+          return gql(`query MyQuery {
+              receptions(where: { id: { _eq: 0 } }) {
+                patient {
+                  fullname
+                  gender
+                  birthday
+                  medical_code
+                }
+              }
+            }`)
+        } else {
+          return gql(`query MyQuery {
+              receptions(where: { id: { _eq: ${this.receptionIdInput} } }) {
+                patient {
+                  fullname
+                  gender
+                  birthday
+                  medical_code
+                  object_patients
+                }
+              }
+            }`)
+        }
+      },
+
+      result(data) {
+        if (data) {
+          // console.log('this.receptionIdInput', this.receptionIdInput)
+          this.patientInfo = data.data.receptions[0].patient
+          this.year_month_day = this.patientInfo.birthday.split('-')
+          this.patient_age =
+            Number(this.to_day.getFullYear()) - Number(this.year_month_day[0])
+
+          console.log('tuổi bệnh nhân: ' + this.patient_age)
+          console.log('tháng bệnh nhân: ' + this.patient_age)
+          // console.log('năm nay: ' + this.to_day.getFullYear())
+          // console.log('patientInfo', data)
+        }
+      },
+      update(data) {
+        if (data) {
+          this.patientInfo = data.receptions[0].patient
+          // console.log('patientInsfsdfsdfo', data)
+        }
+      },
+      skip() {
+        return !this.patientInfo
+      },
+    },
+
+    medicineInfo: {
+      query() {
+        if (this.amount_morning === '') {
+          this.amount_morning = 0
+        }
+        if (this.amount_evening === '') {
+          this.amount_evening = 0
+        }
+        if (this.amount_afternoon === '') {
+          this.amount_afternoon = 0
+        }
+        if (this.amount_night === '') {
+          this.amount_night = 0
+        }
+
+        if (this.medicineNameInput === '') {
+          this.medicineInfo.unit = 0
+          this.amount_morning = 0
+          this.amount_evening = 0
+          this.amount_afternoon = 0
+          this.amount_night = 0
+          this.note_prescription = ''
+          this.medicine_use = ''
+          return gql(`query MyQuery {
+            medicines(where: {medicine_name: {name: {_eq: "0"}}}) {
+              unit
+            }
+          }`)
+        } else {
+          return gql(`query MyQuery {
+            medicines(where: {medicine_name: {name: {_eq: "${this.medicineNameInput}"}}}) {
+              unit
+            }
+          }`)
+        }
+      },
+
+      result(datae) {
+        if (datae) {
+          // console.log('this.receptionIdInput', this.receptionIdInput)
+          this.medicineInfo = datae.data.medicines[0].unit
+          // console.log('medicineInfo resutlt', this.medicineInfo)
+        }
+      },
+      update(datab) {
+        if (datab) {
+          this.medicineInfo = datab.medicines[0].unit
+          // console.log('medicineInfo update', this.medicineInfo)
+        }
+      },
+      skip() {
+        return !this.medicineInfo
+      },
+    },
+
+    // hiện data
     patients: {
       query() {
-        // const query = this.model.getQuery('list', {
-        //   alias: 'tableData',
-        //   limit: this.limit,
-        //   offset: this.offset,
-        // })
         const queryl = gql`
           query MyQuery {
             patients(order_by:{${this.stringSort}} ${this.filterWhere},limit:${this.limit} , offset: ${this.offset},) {
@@ -757,30 +909,97 @@ export default {
         return !this.patients
       },
     },
-    // department_types: {
-    //   query: gql(`query MyQuery {
-    //     department_types {
-    //       id
-    //       name
-    //     }
-    //   }`),
-    //   update: (data) => {},
-    //   result({ data }) {
-    //     this.department_types = data.department_types
-    //     // this.department.department_type = data.department_types[0]
-    //   },
-    // },
 
-    medicine_names_list: {
-      query: gql(`query MyQuery {
-                    medicine_names{
-                      id
+    medicine_choose: {
+      query() {
+        if (this.medicineNameInput === '') {
+          this.medicine_name_choose = []
+          return gql(`query MyQuery {
+                    medicines(where: {medicine_name: {name: {_eq: "0"}}}) {
+                      medicine_name {
+                        name
+                        id
+                      }
+                      medicine_guide {
+                        name
+                      }
+                      unit
+                      medicine_name_id
+                    }
+                    medicine_names(where: {name: {_eq: "0"}}){
                       name
                     }
-                  }`),
+                  }`)
+        } else {
+          return gql(`query MyQuery {
+                    medicines(where: {medicine_name: {name: {_eq: "${this.medicineNameInput}"}}}) {
+                      medicine_name {
+                        name
+                        id
+                      }
+                      medicine_guide {
+                        name
+                      }
+                      unit
+                      medicine_name_id
+                      maximum_dose
+                    }
+                    medicine_names(where: {name: {_eq: "${this.medicineNameInput}"}}){
+                      name
+                    }
+                  }`)
+        }
+      },
+
+      update: (data) => {
+        // console.log(data)
+      },
+      result({ data }) {
+        // console.log(data)
+        this.medicine_name_choose = data.medicines
+        if (data.medicines[0].medicine_guide.name === null) {
+          this.use_way = []
+        } else {
+          this.use_way = data.medicines[0].medicine_guide.name
+        }
+        if (data.medicines[0].maximum_dose === null) {
+          this.maximum_dose = 0
+        } else {
+          this.maximum_dose = Number(data.medicines[0].maximum_dose)
+        }
+        // console.log(this.use_way)
+        console.log('liều limit: ' + this.maximum_dose)
+      },
+    },
+
+    // cắt chuỗi và popup
+    warning_content: {
+      query() {
+        if (this.medicineNameInput === '') {
+          this.medicine_name_choose = []
+          return gql(`query MyQuery {
+                        medicines(where: {medicine_name: {name: {_eq: "0"}}}) {
+                          warning
+                        }
+                      }
+                      `)
+        } else {
+          return gql(`query MyQuery {
+                        medicines(where: {medicine_name: {name: {_eq: "${this.medicineNameInput}"}}}) {
+                          warning
+                        }
+                      }`)
+        }
+      },
+
       update: (data) => {},
       result({ data }) {
-        this.medicine_names_list = data.medicine_names
+        this.str = data.medicines
+        console.log('str: ' + this.str[0].warning)
+        this.str_case = this.str[0].warning.split(';')
+        console.log('str_case: ' + this.str_case[0])
+        // this.search_dianose = 'abc'
+        // console.log('index: ' + this.search_dianose.search('a'))
       },
     },
     medicines_list: {
@@ -805,33 +1024,6 @@ export default {
       },
     },
 
-    // medicines_: {
-    //   query: gql(`query MyQuery {
-    //                 medicine_names{
-    //                   id
-    //                   name
-    //                 }
-    //               }`),
-    //   update: (data) => {},
-    //   result({ data }) {
-    //     if (
-    //       data === undefined ||
-    //       data === [] ||
-    //       data.medicine_names.length === 0
-    //     ) {
-    //       this.medicine.name = data.medicines[0]
-    //       console.log('add medicine_names screen')
-    //     } else {
-    //       this.medicine = data.medicines[0]
-    //       console.log(this.medicine_names)
-    //       this.title_name = this.medicine.name
-    //       if (this.medicine.name === null) {
-    //         this.medicine.name = { id: null, name: null }
-    //       }
-    //     }
-    //   },
-    // },
-
     departments_parent_list: {
       query: gql(`query MyQuery {
         departments(where: {internal_hospital_id: {_eq: ${localStorage.getItem(
@@ -846,34 +1038,6 @@ export default {
         this.departments_parent_list = data.departments
       },
     },
-
-    // departments: {
-    //   query() {
-    //     const query = gql(`query MyQuery {
-    //       department_types{
-    //       name
-    //     }
-    //   }`)
-    //     return query
-    //   },
-    //   update: (data) => {},
-    //   result({ data }) {
-    //     if (
-    //       data === undefined ||
-    //       data === [] ||
-    //       data.departments.length === 0
-    //     ) {
-    //       console.log('add department screen')
-    //     } else {
-    //       this.department = data.departments[0]
-    //       console.log(this.department)
-    //       this.title_name = this.department.name
-    //       if (this.department.department_parent === null) {
-    //         this.department.department_parent = { id: null, name: null }
-    //       }
-    //     }
-    //   },
-    // },
   },
 
   computed: {
@@ -883,12 +1047,15 @@ export default {
         : 'Cập nhật thông tin bệnh nhân'
     },
   },
-
-  watch: {
-    dialogDelete(val) {
-      val || this.closeDelete()
-    },
+  nullEqZero() {
+    if (this.amount_morning === '') return (this.amount_morning = 0)
   },
+
+  // watch: {
+  //   dialogDelete(val) {
+  //     val || this.closeDelete()
+  //   },
+  // },
   mounted() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
@@ -944,7 +1111,9 @@ export default {
               }
             }
           })
-          .catch((response) => console.log(response))
+          .catch((response) => {
+            // console.log(response)
+          })
       } else {
         this.$router.replace({
           name: 'login',
@@ -958,14 +1127,98 @@ export default {
     this.initialize()
   },
   methods: {
+    test() {
+      // console.log(this.medicineNameInput)
+    },
     initialize() {
       this.patients = []
     },
+    check_add() {
+      for (let i = 0; i < this.str_case.length; i++) {
+        this.casename_content = this.str_case[i].split(':')
+        // console.log('casename_content: ' + this.casename_content)
+        this.casename_warning = this.casename_content[0]
+        // console.log('casename_warning: ' + this.casename_warning)
+        this.content_warning = this.casename_content[1].split(',')
+        // console.log('content_warning: ' + this.content_warning)
+        for (let j = 0; j < this.content_warning.length; j++) {
+          if (this.content_warning[j] === '> 70 tuổi') {
+            if (this.patient_age > 70) {
+              this.title_popup_warning = this.casename_warning
+              this.content_popup_warning = this.content_warning[j]
+              this.dialogWarning = true
+              break
+            }
+          } else if (this.content_warning[j] === '< 12 tháng') {
+            if (this.patient_age <= 1) {
+              this.patient_month =
+                Number(this.to_day.getMonth()) - Number(this.year_month_day[1])
+              if (this.patient_month < 11) {
+                this.title_popup_warning = this.casename_warning
+                this.content_popup_warning = this.content_warning[j]
+                this.dialogWarning = true
+                break
+              }
+            }
+          }
+          if (this.diagnose.search(this.content_warning[j]) !== -1) {
+            this.title_popup_warning = this.casename_warning
+            this.content_popup_warning = this.content_warning[j]
+            this.dialogWarning = true
+            break
+          }
+          if (
+            this.amount_morning > this.maximum_dose ||
+            this.amount_evening > this.maximum_dose ||
+            this.amount_afternoon > this.maximum_dose ||
+            this.amount_night > this.maximum_dose
+          ) {
+            this.title_popup_warning = 'Quá liều' // tạm cho vậy
+            this.content_popup_warning = 'quá liều' // giá trị tạm
+            this.dialogWarning = true
+            break
+          }
+        }
+        // console.log('content_warning: ' + this.content_warning)
+        // console.log('casename_warning: ' + this.casename_warning)
+      }
+      if (
+        this.title_popup_warning === '' &&
+        this.content_popup_warning === ''
+      ) {
+        this.is_add_medicine = true
+      }
+      console.log('title warning: ' + this.title_popup_warning)
+      console.log('content_popup: ' + this.content_popup_warning)
+    },
     add() {
-      this.$router.push({
-        path: `/list/old_core/patient/patient_edit`,
-        query: { id: null },
-      })
+      const a = this.medicine_name_choose
+      const total_quantity =
+        this.amount_day *
+        (this.amount_morning +
+          this.amount_evening +
+          this.amount_afternoon +
+          this.amount_night)
+      this.check_add()
+      if (this.is_add_medicine) {
+        this.is_add_medicine = false
+        this.title_popup_warning = ''
+        this.content_popup_warning = ''
+        for (let i = 0; i < a.length; i++) {
+          this.stt_medicine_list = this.stt_medicine_list + 1
+          this.list_medicines_add.push({
+            stt: this.stt_medicine_list,
+            name: a[i].medicine_name.name,
+            mor_num: this.amount_morning + ' ' + this.medicine_use,
+            eve_num: this.amount_evening + ' ' + this.medicine_use,
+            aft_num: this.amount_afternoon + ' ' + this.medicine_use,
+            nig_num: this.amount_night + ' ' + this.medicine_use,
+            total: total_quantity + ' ' + this.medicine_use,
+            note: this.note_prescription,
+            use_way: this.use_way,
+          })
+        }
+      }
     },
     paginate(vale) {
       if (vale.sortBy.length > 0) {
@@ -1104,11 +1357,11 @@ export default {
         this.refreshDatable()
       }
     },
-    deletePatient(item) {
-      this.editedIndex = this.patients.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialogDelete = true
-    },
+    // deletePatient(item) {
+    //   this.editedIndex = this.patients.indexOf(item)
+    //   this.editedItem = Object.assign({}, item)
+    //   this.dialogDelete = true
+    // },
 
     // close() {
     //   this.dialog = false
