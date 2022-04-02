@@ -1591,7 +1591,7 @@ export default {
         return
       }
       if (this.isEdit === true) {
-        this.updateemployeeFunction()
+        this.dialogSave()
       } else {
         this.addemployeeFunction2()
       }
