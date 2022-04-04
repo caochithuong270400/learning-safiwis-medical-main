@@ -8,29 +8,7 @@
         `Thêm đơn thuốc `
       }}</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn tile color="blue" :disabled="!valid" @click="dialogSave = true">
-        <v-icon color="white" left>mdi-content-save</v-icon>
-        Lưu
-      </v-btn>
-      <v-btn tile color="blue" :disabled="!valid" @click="dialogSave = true">
-        <v-icon color="white" left>mdi-cloud-print-outline</v-icon>
-        In
-      </v-btn>
     </v-toolbar>
-    <v-dialog v-model="dialogSave" width="unset">
-      <v-card>
-        <v-card-title class="headline lighten-2 blue--text">
-          Bạn có muốn lưu không?</v-card-title
-        >
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="dialogSave = false"
-            >Không</v-btn
-          >
-          <v-btn color="blue darken-1" text @click="save()">Có</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
     <v-card elevation="2" class="mx-auto" outlined>
       <v-tabs background-color="blue" dark no-animation>
         <v-tab>kê toa</v-tab>
@@ -45,9 +23,12 @@
               <v-col cols="12" sm="2" lg="2" xl="2" md="2">
                 <v-text-field
                   v-model="receptionIdInput"
+                  autofocus
+                  id="focusRecepInput"
                   label="Số phiếu"
                   outlined
                   dense
+                  type="number"
                   hide-details
                   class="required"
                   color="red"
@@ -114,8 +95,6 @@
                   outlined
                   dense
                   hide-details
-                  class="required"
-                  color="red"
                 ></v-text-field>
               </v-col>
               <v-col cols="4" sm="8" lg="8" xl="8" md="8">
@@ -128,7 +107,7 @@
                   hide-details
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" sm="2" lg="2" xl="2" md="2">
+              <v-col cols="12" sm="3" lg="3" xl="3" md="3">
                 <v-autocomplete
                   v-model="medicineNameInput"
                   label="Tên thuốc"
@@ -136,6 +115,8 @@
                   item-text="name"
                   item-value="name"
                   outlined
+                  class="require"
+                  color="red"
                   dense
                   hide-details
                   clearable
@@ -170,6 +151,7 @@
                     label="Số ngày"
                     outlined
                     type="number"
+                    id="dayInput"
                     dense
                     hide-details
                   ></v-text-field>
@@ -182,6 +164,7 @@
                     outlined
                     type="number"
                     dense
+                    id="morningInput"
                     hide-details
                   ></v-text-field>
                 </v-col>
@@ -272,19 +255,20 @@
                     <v-dialog v-model="dialogWarning" width="unset">
                       <v-sheet outlined color="blue" rounded>
                         <v-card>
-                          <v-card-title class="headline blue--text">
-                            <h5>{{ title_popup_warning }}</h5>
+                          <v-card-title class="headline blue--text" style="">
+                            <h5 class="text-uppercase">
+                              {{ title_popup_warning }}
+                            </h5>
                             <hr />
-                            <p>
-                              thuốc không thích hợp với bệnh nhân
+                            <p style="padding-top: 10px">
                               {{ content_popup_warning }}
                             </p>
-                            <p><br />Tiếp tục thêm?</p>
+                            <p v-if="!isInputNull"><br />Tiếp tục thêm?</p>
                           </v-card-title>
-                          <v-card-actions>
+                          <v-card-actions v-if="!isInputNull">
                             <v-spacer></v-spacer>
                             <v-btn
-                              color="blue darken-1"
+                              color="primary"
                               @click="
                                 ;(dialogWarning = false),
                                   (title_popup_warning = ''),
@@ -294,7 +278,7 @@
                               >Không</v-btn
                             >
                             <v-btn
-                              color="blue darken-1"
+                              color="error"
                               @click="
                                 ;(is_add_medicine = true),
                                   add(),
@@ -302,6 +286,20 @@
                               "
                               text
                               >Có</v-btn
+                            >
+                            <v-spacer></v-spacer>
+                          </v-card-actions>
+                          <v-card-actions v-else>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                              color="primary"
+                              @click="
+                                ;(dialogWarning = false),
+                                  (title_popup_warning = ''),
+                                  (content_popup_warning = '')
+                              "
+                              text
+                              >OK</v-btn
                             >
                             <v-spacer></v-spacer>
                           </v-card-actions>
@@ -370,6 +368,7 @@ export default {
     return { objId, isEdit }
   },
   data: () => ({
+    isInputNull: false,
     medical_code: '',
     fullname: '',
     gender: '',
@@ -524,7 +523,6 @@ export default {
     to_day: new Date(),
     year_month_day: '',
     patient_age: 0,
-    patient_month: 0,
     // data warning
     str: [],
     str_case: [],
@@ -535,6 +533,9 @@ export default {
     title_popup_warning: '',
     content_popup_warning: '',
     search_dianose: '',
+    allergy_warning: [],
+    allergy_medicine: [],
+
     itemsPerPage: 10,
     limit: 10,
     offset: 0,
@@ -671,7 +672,7 @@ export default {
         }`)
       },
       skip() {
-        return !this.patients
+        return !this.list_medicines_add
       },
     },
 
@@ -682,6 +683,7 @@ export default {
         this.gender = ''
         this.birthday = ''
         this.object_patients = ''
+        this.diagnose = ''
         if (this.receptionIdInput === '') {
           return gql(`query MyQuery {
               receptions(where: { id: { _eq: 0 } }) {
@@ -728,9 +730,20 @@ export default {
             this.year_month_day = this.patientInfo.birthday.split('-')
             this.patient_age =
               Number(this.to_day.getFullYear()) - Number(this.year_month_day[0])
-
-            console.log('tuổi bệnh nhân: ' + this.patient_age)
-            console.log('tháng bệnh nhân: ' + this.patient_age)
+            if (
+              Number(this.to_day.getFullYear()) ===
+              Number(this.year_month_day[0])
+            ) {
+              this.patient_age =
+                Number(this.to_day.getMonth()) +
+                1 -
+                Number(this.year_month_day[1])
+            }
+            // console.log(
+            //   'Number(this.to_day.getMonth()): ' +
+            //     Number(this.to_day.getMonth())
+            // )
+            // console.log('tháng bệnh nhân: ' + this.patient_age)
           }
           if (resData.medical_examinations[0]) {
             this.diagnose = resData.medical_examinations[0].diagnosis_icd
@@ -973,6 +986,8 @@ export default {
                       unit
                       medicine_name_id
                       maximum_dose
+                      warning
+
                     }
                     medicine_names(where: {name: {_eq: "${this.medicineNameInput}"}}){
                       name
@@ -995,8 +1010,10 @@ export default {
           } else {
             this.maximum_dose = Number(data.medicines[0].maximum_dose)
           }
+          this.str = data.medicines
+          this.str_case = this.str[0].warning.split(';')
           // console.log(this.use_way)
-          console.log('liều limit: ' + this.maximum_dose)
+          // console.log('liều limit: ' + this.maximum_dose)
         }
       },
     },
@@ -1024,10 +1041,54 @@ export default {
       update: (data) => {},
       result({ data }) {
         if (data) {
-          this.str = data.medicines
-          console.log('str: ' + this.str[0].warning)
-          this.str_case = this.str[0].warning.split(';')
-          console.log('str_case: ' + this.str_case[0])
+          if (data.medicines.str) {
+            this.str = data.medicines
+            // console.log('str: ' + this.str[0].warning)
+            this.str_case = this.str[0].warning.split(';')
+            // console.log('str_case: ' + this.str_case[0])
+            // this.search_dianose = 'abc'
+            // console.log('index: ' + this.search_dianose.search('a'))
+          }
+        }
+      },
+    },
+    allergy_history_search: {
+      query() {
+        if (this.medicineNameInput === '') {
+          this.medicine_name_choose = []
+          return gql(`query MyQuery {
+                        allergy_history(where: {medical_code: {_ilike: "0"}}) {
+                          allergy_content
+                          allergy_medicines
+                        }
+                      }
+
+                      `)
+        } else {
+          return gql(`query MyQuery {
+                        allergy_history(where: {medical_code: {_ilike: "${this.medical_code}"}}) {
+                          allergy_content
+                          allergy_medicines
+                        }
+                      }
+                      `)
+        }
+      },
+
+      update: (data) => {},
+      result({ data }) {
+        if (data) {
+          this.allergy_warning = data.allergy_history
+          // console.log('now: ' + this.allergy_warning)
+          // console.log(
+          //   'allergy_warning: ' +
+          //     this.allergy_warning[0].alllergy_content +
+          //     this.allergy_warning[1].alllergy_content
+          // )
+          // if (this.str) {
+          //   this.all = this.str[0].warning.split(';')
+          // }
+          // console.log('str_case: ' + this.str_case[0])
           // this.search_dianose = 'abc'
           // console.log('index: ' + this.search_dianose.search('a'))
         }
@@ -1165,53 +1226,173 @@ export default {
       this.patients = []
     },
     check_add() {
+      // console.log(this.list_medicines_add)
+      this.isInputNull = false
+      if (this.receptionIdInput.trim() === '') {
+        this.isInputNull = true
+        this.title_popup_warning = 'Thông báo'
+        this.content_popup_warning = 'Vui lòng nhập số phiếu bệnh nhân!'
+        this.dialogWarning = true
+        const input = document.getElementById('focusRecepInput')
+        input.focus()
+        return
+      }
+      if (this.medicineNameInput.trim() === '') {
+        this.isInputNull = true
+        this.title_popup_warning = 'Thông báo'
+        this.content_popup_warning = 'Vui lòng nhập thông tin thuốc!'
+        this.dialogWarning = true
+        return
+      }
+      const quantityPerMedi =
+        this.amount_morning +
+        this.amount_evening +
+        this.amount_afternoon +
+        this.amount_night
+      // console.log('quantityPerMedi', quantityPerMedi)
+      if (this.amount_day <= 0) {
+        this.isInputNull = true
+        this.title_popup_warning = 'Thông báo'
+        this.content_popup_warning = 'Số ngày sử dụng thuốc phải >= 1'
+        this.dialogWarning = true
+        const input = document.getElementById('dayInput')
+        input.focus()
+        return
+      }
+      if (quantityPerMedi <= 0) {
+        this.isInputNull = true
+        this.title_popup_warning = 'Thông báo'
+        this.content_popup_warning = 'Số lượng thuốc cho một ngày phải >= 1'
+        this.dialogWarning = true
+        const input = document.getElementById('morningInput')
+        input.focus()
+        return
+      }
+      const alreadyMedi = this.list_medicines_add.filter(
+        (item) => item.name === this.medicine_name_choose[0].medicine_name.name
+      )
+      // console.log('alreadyMedi', alreadyMedi)
+      if (alreadyMedi.length !== 0) {
+        this.isInputNull = true
+        this.title_popup_warning = 'Thông báo'
+        this.content_popup_warning =
+          'Thuốc ' +
+          this.medicine_name_choose[0].medicine_name.name +
+          ' đã có trong đơn'
+        this.dialogWarning = true
+        return
+      }
+
       for (let i = 0; i < this.str_case.length; i++) {
+        // Chống chỉ định:> 70 tuổi,< 12 tháng, Phụ nữ đang mang thai, dị ứng với Paracetamol 500mg,dị ứng với Phenytoin 100mg;
+        // Xung khắc thuốc:Hapacol 650mg(tăng nguy cơ độc gan),Aspirin(tăng ức chế nhu động ruột);
+        // Thận trọng:Đau dạ dày, Tai biến mạch máu não, Suy tim
         this.casename_content = this.str_case[i].split(':')
         // console.log('casename_content: ' + this.casename_content)
         this.casename_warning = this.casename_content[0]
         // console.log('casename_warning: ' + this.casename_warning)
+
         this.content_warning = this.casename_content[1].split(',')
-        // console.log('content_warning: ' + this.content_warning)
-        for (let j = 0; j < this.content_warning.length; j++) {
-          if (this.content_warning[j] === '> 70 tuổi') {
+        const content_warning = this.content_warning.map((element) => {
+          element = element.trim()
+          return element.toLowerCase()
+        })
+
+        // console.log('content_warning ', content_warning)
+        for (let j = 0; j < content_warning.length; j++) {
+          // TH1
+          console.log('content_warning[j]', content_warning[j])
+          // console.log('this.patient_age', content_warning[j] === '< 12 tháng')
+          if (content_warning[j] === '> 70 tuổi') {
             if (this.patient_age > 70) {
               this.title_popup_warning = this.casename_warning
-              this.content_popup_warning = this.content_warning[j]
+              this.content_popup_warning =
+                'Thuốc không phù hợp với bệnh nhân trên 70 tuổi!'
               this.dialogWarning = true
-              break
+              return
             }
-          } else if (this.content_warning[j] === '< 12 tháng') {
-            if (this.patient_age <= 1) {
-              this.patient_month =
-                Number(this.to_day.getMonth()) - Number(this.year_month_day[1])
-              if (this.patient_month < 11) {
-                this.title_popup_warning = this.casename_warning
-                this.content_popup_warning = this.content_warning[j]
-                this.dialogWarning = true
-                break
-              }
+          } else if (content_warning[j] === '< 12 tháng') {
+            if (this.patient_age < 12) {
+              this.title_popup_warning = this.casename_warning
+              this.content_popup_warning =
+                'Thuốc không phù hợp với bệnh nhân dưới 12 tháng tuổi!'
+              this.dialogWarning = true
+              return
             }
           }
-          if (this.diagnose.search(this.content_warning[j]) !== -1) {
+
+          // have object_p
+          if (this.object_patients) {
+            // console.log('object_patients not null ', this.object_patients)
+            const object_patients = this.object_patients.toLowerCase()
+            const isObjWarning = content_warning.includes(object_patients)
+            if (isObjWarning) {
+              this.title_popup_warning = this.casename_warning
+              this.content_popup_warning =
+                'Thuốc không phù hợp với bệnh nhân ' + object_patients + '!'
+              this.dialogWarning = true
+            }
+            return
+          }
+
+          // TH2
+          if (this.allergy_warning) {
+            // console.log('this.allergy_warning', this.allergy_warning)
+            for (let i = 0; i < this.allergy_warning.length; i++) {
+              this.allergy_medicine[i] =
+                this.allergy_warning[i].allergy_medicines
+            }
+            const allergy_content = this.allergy_medicine.filter((item) =>
+              this.medicineNameInput.includes(item)
+            )
+            // console.log('allergy_warning:' + this.allergy_warning)
+            // console.log('in here:' + this.allergy_medicine)
+            // console.log('allergy_content:' + allergy_content)
+            if (allergy_content.length !== 0) {
+              this.title_popup_warning = 'Dị ứng thuốc'
+              this.content_popup_warning =
+                'Bệnh nhân đã từng dị ứng với thuốc ' +
+                allergy_content.join(', ') +
+                '!'
+              this.dialogWarning = true
+              return
+            }
+          }
+          // TH3
+          let diagnose = this.diagnose.split(',')
+          diagnose = diagnose.map((element) => {
+            element = element.toLowerCase()
+            return element.trim()
+          })
+          const diUngChung = diagnose.filter((item) =>
+            content_warning.includes(item)
+          )
+          if (diUngChung.length !== 0) {
             this.title_popup_warning = this.casename_warning
-            this.content_popup_warning = this.content_warning[j]
+            this.content_popup_warning =
+              'Thuốc không phù hợp với bệnh nhân ' + diUngChung.join(', ') + '!'
             this.dialogWarning = true
-            break
-          }
-          if (
-            this.amount_morning > this.maximum_dose ||
-            this.amount_evening > this.maximum_dose ||
-            this.amount_afternoon > this.maximum_dose ||
-            this.amount_night > this.maximum_dose
-          ) {
-            this.title_popup_warning = 'Quá liều' // tạm cho vậy
-            this.content_popup_warning = 'quá liều' // giá trị tạm
-            this.dialogWarning = true
-            break
+            return
           }
         }
         // console.log('content_warning: ' + this.content_warning)
         // console.log('casename_warning: ' + this.casename_warning)
+      }
+      // TH4
+      if (
+        this.amount_morning > this.maximum_dose ||
+        this.amount_evening > this.maximum_dose ||
+        this.amount_afternoon > this.maximum_dose ||
+        this.amount_night > this.maximum_dose
+      ) {
+        this.title_popup_warning = 'Quá liều' // tạm cho vậy
+        this.content_popup_warning =
+          'Thuốc quá liều, liều dùng tối đa của ' +
+          this.medicine_name_choose[0].medicine_name.name +
+          ' cho một buổi là ' +
+          this.maximum_dose // giá trị tạm
+        // console.log('this.medicine_name_choose', this.medicine_name_choose)
+        this.dialogWarning = true
       }
       if (
         this.title_popup_warning === '' &&
@@ -1219,8 +1400,8 @@ export default {
       ) {
         this.is_add_medicine = true
       }
-      console.log('title warning: ' + this.title_popup_warning)
-      console.log('content_popup: ' + this.content_popup_warning)
+      // console.log('title warning: ' + this.title_popup_warning)
+      // console.log('content_popup: ' + this.content_popup_warning)
     },
     add() {
       const a = this.medicine_name_choose
@@ -1279,9 +1460,7 @@ export default {
       // this.dialog = true
     },
     getTotalData() {
-      if (this.totalData && this.totalData.aggregate) {
-        return this.totalData.aggregate.count
-      } else return -1
+      return this.list_medicines_add.length
     },
     onPaginationChange(eventData) {
       if (
