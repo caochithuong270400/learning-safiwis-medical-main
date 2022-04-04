@@ -1237,7 +1237,7 @@ export default {
         input.focus()
         return
       }
-      if (this.medicineNameInput.trim() === '') {
+      if (!this.medicineNameInput) {
         this.isInputNull = true
         this.title_popup_warning = 'Thông báo'
         this.content_popup_warning = 'Vui lòng nhập thông tin thuốc!'
@@ -1282,7 +1282,6 @@ export default {
         this.dialogWarning = true
         return
       }
-
       for (let i = 0; i < this.str_case.length; i++) {
         // Chống chỉ định:> 70 tuổi,< 12 tháng, Phụ nữ đang mang thai, dị ứng với Paracetamol 500mg,dị ứng với Phenytoin 100mg;
         // Xung khắc thuốc:Hapacol 650mg(tăng nguy cơ độc gan),Aspirin(tăng ức chế nhu động ruột);
@@ -1336,11 +1335,12 @@ export default {
           }
 
           // TH2
-          if (this.allergy_warning) {
+          if (this.allergy_warning && this.medicineNameInput) {
             // console.log('this.allergy_warning', this.allergy_warning)
             for (let i = 0; i < this.allergy_warning.length; i++) {
-              this.allergy_medicine[i] =
-                this.allergy_warning[i].allergy_medicines
+              this.allergy_medicine[i] = this.allergy_warning[
+                i
+              ].allergy_medicines
             }
             const allergy_content = this.allergy_medicine.filter((item) =>
               this.medicineNameInput.includes(item)
@@ -1412,6 +1412,7 @@ export default {
           this.amount_afternoon +
           this.amount_night)
       this.check_add()
+
       if (this.is_add_medicine) {
         this.is_add_medicine = false
         this.title_popup_warning = ''
