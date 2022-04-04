@@ -415,17 +415,18 @@ const deleteemployeeGraphl = gql`
 
 export default {
   data: () => ({
-    loading: true,
     itemsPerPage: 10,
     limit: 10,
     offset: 0,
+    search: '',
+    loading: true,
+    dialogDelete: false,
     user: {},
     permission: {},
-    expanded: [],
-    search: '',
-    dialogDelete: false,
     snackbar: false,
     textSnackbar: '',
+
+    expanded: [],
     departments: [],
     work_units: [],
     titles: [],
